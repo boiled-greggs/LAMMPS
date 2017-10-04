@@ -1,0 +1,32 @@
+You should run a benchmark test or two. There are plenty available.
+
+cd /usr/local/share/lammps/bench
+lammps -in in.lj
+# with mpi
+mpiexec -n 2 lammps -in in.lj
+
+The following directories could come in handy
+
+Documentation:
+/usr/local/share/lammps/doc/Manual.html
+
+Potential files:
+/usr/local/share/lammps/potentials
+
+Python examples:
+/usr/local/share/lammps/python-examples
+
+Additional tools (may require manual installation):
+/usr/local/share/lammps/tools
+
+To use the Python module with Python, you may need to amend your
+PYTHONPATH like:
+  export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH
+
+
+Python modules have been installed and Homebrew's site-packages is not
+in your Python sys.path, so you will not be able to import the modules
+this formula installed. If you plan to develop with these modules,
+please run:
+  mkdir -p /Users/gstew/Library/Python/2.7/lib/python/site-packages
+  echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> /Users/gstew/Library/Python/2.7/lib/python/site-packages/homebrew.pth

@@ -1,0 +1,2594 @@
+read_data       ${fname}
+read_data       P8-0-P1.txt
+  orthogonal box = (-0 -0 -0) to (7.8 7.8 7.8)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  48 atoms
+change_box 	all triclinic
+  triclinic box = (-0 -0 -0) to (7.8 7.8 7.8) with tilt (0 0 0)
+
+include potential.mod
+# NOTE: This script can be modified for different pair styles
+# See in.elastic for more info.
+
+# Choose potential
+pair_style     rebo
+pair_coeff     * * CH.airebo C
+Reading potential file CH.airebo with DATE: 2011-10-25
+
+#pair_style     lcbop
+#pair_coeff     C.lcbop
+#pair_style     tersoff
+#pair_coeff     BNC.tersoff
+
+
+# Setup neighbor style
+neighbor 1.0 nsq
+neigh_modify once no every 1 delay 0 check yes
+
+# Setup minimization style
+min_style	     cg
+min_modify	     dmax ${dmax} line quadratic
+min_modify	     dmax 0.01 line quadratic
+
+# Setup output
+thermo		500
+thermo_style custom step temp pe press pxx pyy pzz pxy pxz pyz lx ly lz vol
+thermo_modify norm no
+
+
+# Output
+dump            1 all xtc 100 traj.xtc
+dump            2 all xyz 2000 relaxed.xyz
+#dump            4 all atom 10 dump.atom
+
+# Compute initial state
+fix 3 all box/relax  aniso 0.0
+minimize ${etol} ${ftol} ${maxiter} ${maxeval}
+minimize 0 ${ftol} ${maxiter} ${maxeval}
+minimize 0 1e-10 ${maxiter} ${maxeval}
+minimize 0 1e-10 10000000 ${maxeval}
+minimize 0 1e-10 10000000 10000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair rebo, perpetual
+      attributes: full, newton on, ghost
+      pair build: full/nsq/ghost
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.912 | 5.912 | 5.912 Mbytes
+Step Temp PotEng Press Pxx Pyy Pzz Pxy Pxz Pyz Lx Ly Lz Volume 
+       0            0    -341.7049    513.99613    513.99613    513.99613    513.99613    1.0077843    1.0077843    1.0077843          7.8          7.8          7.8      474.552 
+     157            0   -341.70536 1.0596836e-07 1.4084715e-07 1.8048237e-08 1.5900969e-07 1.3252962e-07 1.339799e-07 1.3290962e-07    7.8005836    7.8005836    7.8005836    474.65854 
+Loop time of 0.0648968 on 1 procs for 157 steps with 48 atoms
+
+90.6% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+        -341.704895275     -341.705356423     -341.705356423
+  Force two-norm initial, final = 0.381901 9.12487e-11
+  Force max component initial, final = 0.152242 4.71045e-11
+  Final line search alpha, max atom move = 1 4.71045e-11
+  Iterations, force evaluations = 157 311
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.059141   | 0.059141   | 0.059141   |   0.0 | 91.13
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.0011795  | 0.0011795  | 0.0011795  |   0.0 |  1.82
+Output  | 1.4067e-05 | 1.4067e-05 | 1.4067e-05 |   0.0 |  0.02
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.004562   |            |       |  7.03
+
+Nlocal:    48 ave 48 max 48 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    1032 ave 1032 max 1032 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:  7152 ave 7152 max 7152 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 7152
+Ave neighs/atom = 149
+Neighbor list builds = 0
+Dangerous builds = 0
+
+#dump rel all xyz 10 relaxed-*.xyz
+#dump 3 all xyz 10 relaxed.xyz
+#dump 3 all atom 10 dump.atom
+
+variable tmp equal pxx
+variable pxx0 equal ${tmp}
+variable pxx0 equal 1.40847151997924e-07
+variable tmp equal pyy
+variable pyy0 equal ${tmp}
+variable pyy0 equal 1.80482371386397e-08
+variable tmp equal pzz
+variable pzz0 equal ${tmp}
+variable pzz0 equal 1.59009687268399e-07
+variable tmp equal pyz
+variable pyz0 equal ${tmp}
+variable pyz0 equal 1.3290961517698e-07
+variable tmp equal pxz
+variable pxz0 equal ${tmp}
+variable pxz0 equal 1.33979895388519e-07
+variable tmp equal pxy
+variable pxy0 equal ${tmp}
+variable pxy0 equal 1.32529620732126e-07
+
+variable tmp equal lx
+variable lx0 equal ${tmp}
+variable lx0 equal 7.80058364599964
+variable tmp equal ly
+variable ly0 equal ${tmp}
+variable ly0 equal 7.80058364599987
+variable tmp equal lz
+variable lz0 equal ${tmp}
+variable lz0 equal 7.80058364599961
+
+# These formulas define the derivatives w.r.t. strain components
+# Constants uses $, variables use v_
+variable d1 equal -(v_pxx1-${pxx0})/(v_delta/v_len0)*${cfac}
+variable d1 equal -(v_pxx1-1.40847151997924e-07)/(v_delta/v_len0)*${cfac}
+variable d1 equal -(v_pxx1-1.40847151997924e-07)/(v_delta/v_len0)*0.0001
+variable d2 equal -(v_pyy1-${pyy0})/(v_delta/v_len0)*${cfac}
+variable d2 equal -(v_pyy1-1.80482371386397e-08)/(v_delta/v_len0)*${cfac}
+variable d2 equal -(v_pyy1-1.80482371386397e-08)/(v_delta/v_len0)*0.0001
+variable d3 equal -(v_pzz1-${pzz0})/(v_delta/v_len0)*${cfac}
+variable d3 equal -(v_pzz1-1.59009687268399e-07)/(v_delta/v_len0)*${cfac}
+variable d3 equal -(v_pzz1-1.59009687268399e-07)/(v_delta/v_len0)*0.0001
+variable d4 equal -(v_pyz1-${pyz0})/(v_delta/v_len0)*${cfac}
+variable d4 equal -(v_pyz1-1.3290961517698e-07)/(v_delta/v_len0)*${cfac}
+variable d4 equal -(v_pyz1-1.3290961517698e-07)/(v_delta/v_len0)*0.0001
+variable d5 equal -(v_pxz1-${pxz0})/(v_delta/v_len0)*${cfac}
+variable d5 equal -(v_pxz1-1.33979895388519e-07)/(v_delta/v_len0)*${cfac}
+variable d5 equal -(v_pxz1-1.33979895388519e-07)/(v_delta/v_len0)*0.0001
+variable d6 equal -(v_pxy1-${pxy0})/(v_delta/v_len0)*${cfac}
+variable d6 equal -(v_pxy1-1.32529620732126e-07)/(v_delta/v_len0)*${cfac}
+variable d6 equal -(v_pxy1-1.32529620732126e-07)/(v_delta/v_len0)*0.0001
+
+displace_atoms all random ${atomjiggle} ${atomjiggle} ${atomjiggle} 87287 units box
+displace_atoms all random 1e-05 ${atomjiggle} ${atomjiggle} 87287 units box
+displace_atoms all random 1e-05 1e-05 ${atomjiggle} 87287 units box
+displace_atoms all random 1e-05 1e-05 1e-05 87287 units box
+
+# Write restart
+unfix 3
+write_restart restart.equil
+
+# uxx Perturbation
+
+variable dir equal 1
+include displace.mod
+# NOTE: This script should not need to be
+# modified. See in.elastic for more info.
+#
+# Find which reference length to use
+
+if "${dir} == 1" then    "variable len0 equal ${lx0}"
+variable len0 equal ${lx0}
+variable len0 equal 7.80058364599964
+if "${dir} == 2" then    "variable len0 equal ${ly0}"
+if "${dir} == 3" then    "variable len0 equal ${lz0}"
+if "${dir} == 4" then    "variable len0 equal ${lz0}"
+if "${dir} == 5" then    "variable len0 equal ${lz0}"
+if "${dir} == 6" then    "variable len0 equal ${ly0}"
+
+# Reset box and simulation parameters
+
+clear
+box tilt large
+read_restart restart.equil
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 0 0)
+  1 by 1 by 1 MPI processor grid
+  48 atoms
+include potential.mod
+# NOTE: This script can be modified for different pair styles
+# See in.elastic for more info.
+
+# Choose potential
+pair_style     rebo
+pair_coeff     * * CH.airebo C
+Reading potential file CH.airebo with DATE: 2011-10-25
+
+#pair_style     lcbop
+#pair_coeff     C.lcbop
+#pair_style     tersoff
+#pair_coeff     BNC.tersoff
+
+
+# Setup neighbor style
+neighbor 1.0 nsq
+neigh_modify once no every 1 delay 0 check yes
+
+# Setup minimization style
+min_style	     cg
+min_modify	     dmax ${dmax} line quadratic
+min_modify	     dmax 0.01 line quadratic
+
+# Setup output
+thermo		500
+thermo_style custom step temp pe press pxx pyy pzz pxy pxz pyz lx ly lz vol
+thermo_modify norm no
+
+
+# Output
+dump            1 all xtc 100 traj.xtc
+dump            2 all xyz 2000 relaxed.xyz
+#dump            4 all atom 10 dump.atom
+
+# Negative deformation
+
+variable delta equal -${up}*${len0}
+variable delta equal -1.0e-5*${len0}
+variable delta equal -1.0e-5*7.80058364599964
+variable deltaxy equal -${up}*xy
+variable deltaxy equal -1.0e-5*xy
+variable deltaxz equal -${up}*xz
+variable deltaxz equal -1.0e-5*xz
+variable deltayz equal -${up}*yz
+variable deltayz equal -1.0e-5*yz
+if "${dir} == 1" then    "change_box all x delta 0 ${delta} xy delta ${deltaxy} xz delta ${deltaxz} remap units box"
+change_box all x delta 0 ${delta} xy delta ${deltaxy} xz delta ${deltaxz} remap units box
+change_box all x delta 0 -7.80058364599964e-05 xy delta ${deltaxy} xz delta ${deltaxz} remap units box
+change_box all x delta 0 -7.80058364599964e-05 xy delta -0 xz delta ${deltaxz} remap units box
+change_box all x delta 0 -7.80058364599964e-05 xy delta -0 xz delta -0 remap units box
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80021 7.80029 7.80029) with tilt (0 0 0)
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80021 7.80029 7.80029) with tilt (0 0 0)
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80021 7.80029 7.80029) with tilt (0 0 0)
+if "${dir} == 2" then    "change_box all y delta 0 ${delta} yz delta ${deltayz} remap units box"
+if "${dir} == 3" then    "change_box all z delta 0 ${delta} remap units box"
+if "${dir} == 4" then    "change_box all yz delta ${delta} remap units box"
+if "${dir} == 5" then    "change_box all xz delta ${delta} remap units box"
+if "${dir} == 6" then    "change_box all xy delta ${delta} remap units box"
+
+# Relax atoms positions
+
+minimize ${etol} ${ftol} ${maxiter} ${maxeval}
+minimize 0 ${ftol} ${maxiter} ${maxeval}
+minimize 0 1e-10 ${maxiter} ${maxeval}
+minimize 0 1e-10 10000000 ${maxeval}
+minimize 0 1e-10 10000000 10000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair rebo, perpetual
+      attributes: full, newton on, ghost
+      pair build: full/nsq/ghost
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 4.905 | 4.905 | 4.905 Mbytes
+Step Temp PotEng Press Pxx Pyy Pzz Pxy Pxz Pyz Lx Ly Lz Volume 
+     157            0   -341.70536      23.0105    47.687471    13.643131     7.700898    4.4867883   0.67880484 -0.023980973    7.8005056    7.8005836    7.8005836    474.65379 
+     209            0   -341.70536    21.340937    26.887303    18.567754    18.567754 4.5351704e-08 -5.3925274e-08 4.9056499e-08    7.8005056    7.8005836    7.8005836    474.65379 
+Loop time of 0.0201151 on 1 procs for 52 steps with 48 atoms
+
+95.7% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+        -341.705356188     -341.705356384     -341.705356384
+  Force two-norm initial, final = 0.00593912 9.06336e-11
+  Force max component initial, final = 0.0012044 2.10717e-11
+  Final line search alpha, max atom move = 1 2.10717e-11
+  Iterations, force evaluations = 52 104
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.018786   | 0.018786   | 0.018786   |   0.0 | 93.39
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00068521 | 0.00068521 | 0.00068521 |   0.0 |  3.41
+Output  | 2.8849e-05 | 2.8849e-05 | 2.8849e-05 |   0.0 |  0.14
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0006149  |            |       |  3.06
+
+Nlocal:    48 ave 48 max 48 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    1032 ave 1032 max 1032 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:  7152 ave 7152 max 7152 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 7152
+Ave neighs/atom = 149
+Neighbor list builds = 0
+Dangerous builds = 0
+
+# Obtain new stress tensor
+
+variable tmp equal pxx
+variable pxx1 equal ${tmp}
+variable pxx1 equal 26.8873031424871
+variable tmp equal pyy
+variable pyy1 equal ${tmp}
+variable pyy1 equal 18.5677538979123
+variable tmp equal pzz
+variable pzz1 equal ${tmp}
+variable pzz1 equal 18.5677540385806
+variable tmp equal pxy
+variable pxy1 equal ${tmp}
+variable pxy1 equal 4.53517037411586e-08
+variable tmp equal pxz
+variable pxz1 equal ${tmp}
+variable pxz1 equal -5.39252736083703e-08
+variable tmp equal pyz
+variable pyz1 equal ${tmp}
+variable pyz1 equal 4.90564992524469e-08
+
+# Compute elastic constant from pressure tensor
+
+variable C1neg equal ${d1}
+variable C1neg equal 268.8730300164
+variable C2neg equal ${d2}
+variable C2neg equal 185.677538798641
+variable C3neg equal ${d3}
+variable C3neg equal 185.677538795709
+variable C4neg equal ${d4}
+variable C4neg equal -8.38531159245331e-07
+variable C5neg equal ${d5}
+variable C5neg equal -1.87905168996889e-06
+variable C6neg equal ${d6}
+variable C6neg equal -8.71779169909674e-07
+
+# Reset box and simulation parameters
+
+clear
+box tilt large
+read_restart restart.equil
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 0 0)
+  1 by 1 by 1 MPI processor grid
+  48 atoms
+include potential.mod
+# NOTE: This script can be modified for different pair styles
+# See in.elastic for more info.
+
+# Choose potential
+pair_style     rebo
+pair_coeff     * * CH.airebo C
+Reading potential file CH.airebo with DATE: 2011-10-25
+
+#pair_style     lcbop
+#pair_coeff     C.lcbop
+#pair_style     tersoff
+#pair_coeff     BNC.tersoff
+
+
+# Setup neighbor style
+neighbor 1.0 nsq
+neigh_modify once no every 1 delay 0 check yes
+
+# Setup minimization style
+min_style	     cg
+min_modify	     dmax ${dmax} line quadratic
+min_modify	     dmax 0.01 line quadratic
+
+# Setup output
+thermo		500
+thermo_style custom step temp pe press pxx pyy pzz pxy pxz pyz lx ly lz vol
+thermo_modify norm no
+
+
+# Output
+dump            1 all xtc 100 traj.xtc
+dump            2 all xyz 2000 relaxed.xyz
+#dump            4 all atom 10 dump.atom
+
+# Positive deformation
+
+variable delta equal ${up}*${len0}
+variable delta equal 1.0e-5*${len0}
+variable delta equal 1.0e-5*7.80058364599964
+variable deltaxy equal ${up}*xy
+variable deltaxy equal 1.0e-5*xy
+variable deltaxz equal ${up}*xz
+variable deltaxz equal 1.0e-5*xz
+variable deltayz equal ${up}*yz
+variable deltayz equal 1.0e-5*yz
+if "${dir} == 1" then    "change_box all x delta 0 ${delta} xy delta ${deltaxy} xz delta ${deltaxz} remap units box"
+change_box all x delta 0 ${delta} xy delta ${deltaxy} xz delta ${deltaxz} remap units box
+change_box all x delta 0 7.80058364599964e-05 xy delta ${deltaxy} xz delta ${deltaxz} remap units box
+change_box all x delta 0 7.80058364599964e-05 xy delta 0 xz delta ${deltaxz} remap units box
+change_box all x delta 0 7.80058364599964e-05 xy delta 0 xz delta 0 remap units box
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80037 7.80029 7.80029) with tilt (0 0 0)
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80037 7.80029 7.80029) with tilt (0 0 0)
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80037 7.80029 7.80029) with tilt (0 0 0)
+if "${dir} == 2" then    "change_box all y delta 0 ${delta} yz delta ${deltayz} remap units box"
+if "${dir} == 3" then    "change_box all z delta 0 ${delta} remap units box"
+if "${dir} == 4" then    "change_box all yz delta ${delta} remap units box"
+if "${dir} == 5" then    "change_box all xz delta ${delta} remap units box"
+if "${dir} == 6" then    "change_box all xy delta ${delta} remap units box"
+
+# Relax atoms positions
+
+minimize ${etol} ${ftol} ${maxiter} ${maxeval}
+minimize 0 ${ftol} ${maxiter} ${maxeval}
+minimize 0 1e-10 ${maxiter} ${maxeval}
+minimize 0 1e-10 10000000 ${maxeval}
+minimize 0 1e-10 10000000 10000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair rebo, perpetual
+      attributes: full, newton on, ghost
+      pair build: full/nsq/ghost
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 4.905 | 4.905 | 4.905 Mbytes
+Step Temp PotEng Press Pxx Pyy Pzz Pxy Pxz Pyz Lx Ly Lz Volume 
+     157            0   -341.70536   -23.030599   -53.076818    -5.036309    -10.97867    4.4863221   0.67872972 -0.023986385    7.8006617    7.8005836    7.8005836    474.66328 
+     209            0   -341.70536   -21.340393   -26.888012   -18.566584   -18.566584 -2.0888431e-07 -2.495197e-08 -5.711102e-08    7.8006617    7.8005836    7.8005836    474.66328 
+Loop time of 0.022536 on 1 procs for 52 steps with 48 atoms
+
+79.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+        -341.705356172     -341.705356384     -341.705356384
+  Force two-norm initial, final = 0.00608491 9.68053e-11
+  Force max component initial, final = 0.00125772 2.28703e-11
+  Final line search alpha, max atom move = 1 2.28703e-11
+  Iterations, force evaluations = 52 104
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.021839   | 0.021839   | 0.021839   |   0.0 | 96.91
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00037909 | 0.00037909 | 0.00037909 |   0.0 |  1.68
+Output  | 2.3127e-05 | 2.3127e-05 | 2.3127e-05 |   0.0 |  0.10
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0002944  |            |       |  1.31
+
+Nlocal:    48 ave 48 max 48 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    1032 ave 1032 max 1032 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:  7152 ave 7152 max 7152 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 7152
+Ave neighs/atom = 149
+Neighbor list builds = 0
+Dangerous builds = 0
+
+# Obtain new stress tensor
+
+variable tmp equal pe
+variable e1 equal ${tmp}
+variable e1 equal -341.705356383521
+variable tmp equal press
+variable p1 equal ${tmp}
+variable p1 equal -21.3403931316567
+variable tmp equal pxx
+variable pxx1 equal ${tmp}
+variable pxx1 equal -26.8880116314521
+variable tmp equal pyy
+variable pyy1 equal ${tmp}
+variable pyy1 equal -18.5665838858314
+variable tmp equal pzz
+variable pzz1 equal ${tmp}
+variable pzz1 equal -18.5665838776864
+variable tmp equal pxy
+variable pxy1 equal ${tmp}
+variable pxy1 equal -2.08884305174171e-07
+variable tmp equal pxz
+variable pxz1 equal ${tmp}
+variable pxz1 equal -2.49519695297261e-08
+variable tmp equal pyz
+variable pyz1 equal ${tmp}
+variable pyz1 equal -5.71110200097661e-08
+
+# Compute elastic constant from pressure tensor
+
+variable C1pos equal ${d1}
+variable C1pos equal 268.880117722993
+variable C2pos equal ${d2}
+variable C2pos equal 185.665839038796
+variable C3pos equal ${d3}
+variable C3pos equal 185.665840366961
+variable C4pos equal ${d4}
+variable C4pos equal 1.90020635186746e-06
+variable C5pos equal ${d5}
+variable C5pos equal 1.58931864918245e-06
+variable C6pos equal ${d6}
+variable C6pos equal 3.41413925906297e-06
+
+# Combine positive and negative
+
+variable C1${dir} equal 0.5*(${C1neg}+${C1pos})
+variable C11 equal 0.5*(${C1neg}+${C1pos})
+variable C11 equal 0.5*(268.8730300164+${C1pos})
+variable C11 equal 0.5*(268.8730300164+268.880117722993)
+variable C2${dir} equal 0.5*(${C2neg}+${C2pos})
+variable C21 equal 0.5*(${C2neg}+${C2pos})
+variable C21 equal 0.5*(185.677538798641+${C2pos})
+variable C21 equal 0.5*(185.677538798641+185.665839038796)
+variable C3${dir} equal 0.5*(${C3neg}+${C3pos})
+variable C31 equal 0.5*(${C3neg}+${C3pos})
+variable C31 equal 0.5*(185.677538795709+${C3pos})
+variable C31 equal 0.5*(185.677538795709+185.665840366961)
+variable C4${dir} equal 0.5*(${C4neg}+${C4pos})
+variable C41 equal 0.5*(${C4neg}+${C4pos})
+variable C41 equal 0.5*(-8.38531159245331e-07+${C4pos})
+variable C41 equal 0.5*(-8.38531159245331e-07+1.90020635186746e-06)
+variable C5${dir} equal 0.5*(${C5neg}+${C5pos})
+variable C51 equal 0.5*(${C5neg}+${C5pos})
+variable C51 equal 0.5*(-1.87905168996889e-06+${C5pos})
+variable C51 equal 0.5*(-1.87905168996889e-06+1.58931864918245e-06)
+variable C6${dir} equal 0.5*(${C6neg}+${C6pos})
+variable C61 equal 0.5*(${C6neg}+${C6pos})
+variable C61 equal 0.5*(-8.71779169909674e-07+${C6pos})
+variable C61 equal 0.5*(-8.71779169909674e-07+3.41413925906297e-06)
+
+# Delete dir to make sure it is not reused
+
+variable dir delete
+
+# uyy Perturbation
+
+variable dir equal 2
+include displace.mod
+# NOTE: This script should not need to be
+# modified. See in.elastic for more info.
+#
+# Find which reference length to use
+
+if "${dir} == 1" then    "variable len0 equal ${lx0}"
+if "${dir} == 2" then    "variable len0 equal ${ly0}"
+variable len0 equal ${ly0}
+variable len0 equal 7.80058364599987
+if "${dir} == 3" then    "variable len0 equal ${lz0}"
+if "${dir} == 4" then    "variable len0 equal ${lz0}"
+if "${dir} == 5" then    "variable len0 equal ${lz0}"
+if "${dir} == 6" then    "variable len0 equal ${ly0}"
+
+# Reset box and simulation parameters
+
+clear
+box tilt large
+read_restart restart.equil
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 0 0)
+  1 by 1 by 1 MPI processor grid
+  48 atoms
+include potential.mod
+# NOTE: This script can be modified for different pair styles
+# See in.elastic for more info.
+
+# Choose potential
+pair_style     rebo
+pair_coeff     * * CH.airebo C
+Reading potential file CH.airebo with DATE: 2011-10-25
+
+#pair_style     lcbop
+#pair_coeff     C.lcbop
+#pair_style     tersoff
+#pair_coeff     BNC.tersoff
+
+
+# Setup neighbor style
+neighbor 1.0 nsq
+neigh_modify once no every 1 delay 0 check yes
+
+# Setup minimization style
+min_style	     cg
+min_modify	     dmax ${dmax} line quadratic
+min_modify	     dmax 0.01 line quadratic
+
+# Setup output
+thermo		500
+thermo_style custom step temp pe press pxx pyy pzz pxy pxz pyz lx ly lz vol
+thermo_modify norm no
+
+
+# Output
+dump            1 all xtc 100 traj.xtc
+dump            2 all xyz 2000 relaxed.xyz
+#dump            4 all atom 10 dump.atom
+
+# Negative deformation
+
+variable delta equal -${up}*${len0}
+variable delta equal -1.0e-5*${len0}
+variable delta equal -1.0e-5*7.80058364599987
+variable deltaxy equal -${up}*xy
+variable deltaxy equal -1.0e-5*xy
+variable deltaxz equal -${up}*xz
+variable deltaxz equal -1.0e-5*xz
+variable deltayz equal -${up}*yz
+variable deltayz equal -1.0e-5*yz
+if "${dir} == 1" then    "change_box all x delta 0 ${delta} xy delta ${deltaxy} xz delta ${deltaxz} remap units box"
+if "${dir} == 2" then    "change_box all y delta 0 ${delta} yz delta ${deltayz} remap units box"
+change_box all y delta 0 ${delta} yz delta ${deltayz} remap units box
+change_box all y delta 0 -7.80058364599987e-05 yz delta ${deltayz} remap units box
+change_box all y delta 0 -7.80058364599987e-05 yz delta -0 remap units box
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80021 7.80029) with tilt (0 0 0)
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80021 7.80029) with tilt (0 0 0)
+if "${dir} == 3" then    "change_box all z delta 0 ${delta} remap units box"
+if "${dir} == 4" then    "change_box all yz delta ${delta} remap units box"
+if "${dir} == 5" then    "change_box all xz delta ${delta} remap units box"
+if "${dir} == 6" then    "change_box all xy delta ${delta} remap units box"
+
+# Relax atoms positions
+
+minimize ${etol} ${ftol} ${maxiter} ${maxeval}
+minimize 0 ${ftol} ${maxiter} ${maxeval}
+minimize 0 1e-10 ${maxiter} ${maxeval}
+minimize 0 1e-10 10000000 ${maxeval}
+minimize 0 1e-10 10000000 10000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair rebo, perpetual
+      attributes: full, newton on, ghost
+      pair build: full/nsq/ghost
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 4.905 | 4.905 | 4.905 Mbytes
+Step Temp PotEng Press Pxx Pyy Pzz Pxy Pxz Pyz Lx Ly Lz Volume 
+     157            0   -341.70536    23.010723    6.6435503    54.687772    7.7008477    4.4867486   0.67884041 -0.023977024    7.8005836    7.8005056    7.8005836    474.65379 
+     208            0   -341.70536    21.340937    18.567754    26.887303    18.567754 -2.4339525e-07 -2.3696301e-08 -5.9087853e-08    7.8005836    7.8005056    7.8005836    474.65379 
+Loop time of 0.0186441 on 1 procs for 51 steps with 48 atoms
+
+99.1% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+        -341.705356167     -341.705356384     -341.705356384
+  Force two-norm initial, final = 0.00605407 9.92117e-11
+  Force max component initial, final = 0.00129632 2.66198e-11
+  Final line search alpha, max atom move = 1 2.66198e-11
+  Iterations, force evaluations = 51 102
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.017903   | 0.017903   | 0.017903   |   0.0 | 96.02
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00039077 | 0.00039077 | 0.00039077 |   0.0 |  2.10
+Output  | 4.5776e-05 | 4.5776e-05 | 4.5776e-05 |   0.0 |  0.25
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0003049  |            |       |  1.64
+
+Nlocal:    48 ave 48 max 48 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    1032 ave 1032 max 1032 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:  7152 ave 7152 max 7152 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 7152
+Ave neighs/atom = 149
+Neighbor list builds = 0
+Dangerous builds = 0
+
+# Obtain new stress tensor
+
+variable tmp equal pxx
+variable pxx1 equal ${tmp}
+variable pxx1 equal 18.5677539416169
+variable tmp equal pyy
+variable pyy1 equal ${tmp}
+variable pyy1 equal 26.8873031183827
+variable tmp equal pzz
+variable pzz1 equal ${tmp}
+variable pzz1 equal 18.5677539753045
+variable tmp equal pxy
+variable pxy1 equal ${tmp}
+variable pxy1 equal -2.43395246596561e-07
+variable tmp equal pxz
+variable pxz1 equal ${tmp}
+variable pxz1 equal -2.36963008061688e-08
+variable tmp equal pyz
+variable pyz1 equal ${tmp}
+variable pyz1 equal -5.9087853313358e-08
+
+# Compute elastic constant from pressure tensor
+
+variable C1neg equal ${d1}
+variable C1neg equal 185.677538007697
+variable C2neg equal ${d2}
+variable C2neg equal 268.873031003345
+variable C3neg equal ${d3}
+variable C3neg equal 185.677538162948
+variable C4neg equal ${d4}
+variable C4neg equal -1.91997468490338e-06
+variable C5neg equal ${d5}
+variable C5neg equal -1.57676196194688e-06
+variable C6neg equal ${d6}
+variable C6neg equal -3.75924867328687e-06
+
+# Reset box and simulation parameters
+
+clear
+box tilt large
+read_restart restart.equil
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 0 0)
+  1 by 1 by 1 MPI processor grid
+  48 atoms
+include potential.mod
+# NOTE: This script can be modified for different pair styles
+# See in.elastic for more info.
+
+# Choose potential
+pair_style     rebo
+pair_coeff     * * CH.airebo C
+Reading potential file CH.airebo with DATE: 2011-10-25
+
+#pair_style     lcbop
+#pair_coeff     C.lcbop
+#pair_style     tersoff
+#pair_coeff     BNC.tersoff
+
+
+# Setup neighbor style
+neighbor 1.0 nsq
+neigh_modify once no every 1 delay 0 check yes
+
+# Setup minimization style
+min_style	     cg
+min_modify	     dmax ${dmax} line quadratic
+min_modify	     dmax 0.01 line quadratic
+
+# Setup output
+thermo		500
+thermo_style custom step temp pe press pxx pyy pzz pxy pxz pyz lx ly lz vol
+thermo_modify norm no
+
+
+# Output
+dump            1 all xtc 100 traj.xtc
+dump            2 all xyz 2000 relaxed.xyz
+#dump            4 all atom 10 dump.atom
+
+# Positive deformation
+
+variable delta equal ${up}*${len0}
+variable delta equal 1.0e-5*${len0}
+variable delta equal 1.0e-5*7.80058364599987
+variable deltaxy equal ${up}*xy
+variable deltaxy equal 1.0e-5*xy
+variable deltaxz equal ${up}*xz
+variable deltaxz equal 1.0e-5*xz
+variable deltayz equal ${up}*yz
+variable deltayz equal 1.0e-5*yz
+if "${dir} == 1" then    "change_box all x delta 0 ${delta} xy delta ${deltaxy} xz delta ${deltaxz} remap units box"
+if "${dir} == 2" then    "change_box all y delta 0 ${delta} yz delta ${deltayz} remap units box"
+change_box all y delta 0 ${delta} yz delta ${deltayz} remap units box
+change_box all y delta 0 7.80058364599987e-05 yz delta ${deltayz} remap units box
+change_box all y delta 0 7.80058364599987e-05 yz delta 0 remap units box
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80037 7.80029) with tilt (0 0 0)
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80037 7.80029) with tilt (0 0 0)
+if "${dir} == 3" then    "change_box all z delta 0 ${delta} remap units box"
+if "${dir} == 4" then    "change_box all yz delta ${delta} remap units box"
+if "${dir} == 5" then    "change_box all xz delta ${delta} remap units box"
+if "${dir} == 6" then    "change_box all xy delta ${delta} remap units box"
+
+# Relax atoms positions
+
+minimize ${etol} ${ftol} ${maxiter} ${maxeval}
+minimize 0 ${ftol} ${maxiter} ${maxeval}
+minimize 0 1e-10 ${maxiter} ${maxeval}
+minimize 0 1e-10 10000000 ${maxeval}
+minimize 0 1e-10 10000000 10000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair rebo, perpetual
+      attributes: full, newton on, ghost
+      pair build: full/nsq/ghost
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 4.905 | 4.905 | 4.905 Mbytes
+Step Temp PotEng Press Pxx Pyy Pzz Pxy Pxz Pyz Lx Ly Lz Volume 
+     157            0   -341.70536   -23.030823    -12.03575   -46.078099   -10.978619    4.4863618   0.67869415 -0.023990339    7.8005836    7.8006617    7.8005836    474.66328 
+     209            0   -341.70536   -21.340393   -18.566584   -26.888012   -18.566584 -2.4200233e-08 -3.8214917e-08 -1.6398807e-09    7.8005836    7.8006617    7.8005836    474.66328 
+Loop time of 0.0201752 on 1 procs for 52 steps with 48 atoms
+
+96.4% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+        -341.705356193     -341.705356384     -341.705356384
+  Force two-norm initial, final = 0.0059706 9.52523e-11
+  Force max component initial, final = 0.00125772 2.45631e-11
+  Final line search alpha, max atom move = 1 2.45631e-11
+  Iterations, force evaluations = 52 104
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.0189     | 0.0189     | 0.0189     |   0.0 | 93.68
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00063848 | 0.00063848 | 0.00063848 |   0.0 |  3.16
+Output  | 8.1062e-05 | 8.1062e-05 | 8.1062e-05 |   0.0 |  0.40
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0005553  |            |       |  2.75
+
+Nlocal:    48 ave 48 max 48 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    1032 ave 1032 max 1032 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:  7152 ave 7152 max 7152 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 7152
+Ave neighs/atom = 149
+Neighbor list builds = 0
+Dangerous builds = 0
+
+# Obtain new stress tensor
+
+variable tmp equal pe
+variable e1 equal ${tmp}
+variable e1 equal -341.705356383521
+variable tmp equal press
+variable p1 equal ${tmp}
+variable p1 equal -21.3403931418195
+variable tmp equal pxx
+variable pxx1 equal ${tmp}
+variable pxx1 equal -18.5665838758887
+variable tmp equal pyy
+variable pyy1 equal ${tmp}
+variable pyy1 equal -26.8880116562224
+variable tmp equal pzz
+variable pzz1 equal ${tmp}
+variable pzz1 equal -18.5665838933473
+variable tmp equal pxy
+variable pxy1 equal ${tmp}
+variable pxy1 equal -2.42002326127997e-08
+variable tmp equal pxz
+variable pxz1 equal ${tmp}
+variable pxz1 equal -3.82149171687395e-08
+variable tmp equal pyz
+variable pyz1 equal ${tmp}
+variable pyz1 equal -1.63988073203895e-09
+
+# Compute elastic constant from pressure tensor
+
+variable C1pos equal ${d1}
+variable C1pos equal 185.665840167359
+variable C2pos equal ${d2}
+variable C2pos equal 268.880116742706
+variable C3pos equal ${d3}
+variable C3pos equal 185.66584052357
+variable C4pos equal ${d4}
+variable C4pos equal 1.34549495909019e-06
+variable C5pos equal ${d5}
+variable C5pos equal 1.72194812557259e-06
+variable C6pos equal ${d6}
+variable C6pos equal 1.56729853344926e-06
+
+# Combine positive and negative
+
+variable C1${dir} equal 0.5*(${C1neg}+${C1pos})
+variable C12 equal 0.5*(${C1neg}+${C1pos})
+variable C12 equal 0.5*(185.677538007697+${C1pos})
+variable C12 equal 0.5*(185.677538007697+185.665840167359)
+variable C2${dir} equal 0.5*(${C2neg}+${C2pos})
+variable C22 equal 0.5*(${C2neg}+${C2pos})
+variable C22 equal 0.5*(268.873031003345+${C2pos})
+variable C22 equal 0.5*(268.873031003345+268.880116742706)
+variable C3${dir} equal 0.5*(${C3neg}+${C3pos})
+variable C32 equal 0.5*(${C3neg}+${C3pos})
+variable C32 equal 0.5*(185.677538162948+${C3pos})
+variable C32 equal 0.5*(185.677538162948+185.66584052357)
+variable C4${dir} equal 0.5*(${C4neg}+${C4pos})
+variable C42 equal 0.5*(${C4neg}+${C4pos})
+variable C42 equal 0.5*(-1.91997468490338e-06+${C4pos})
+variable C42 equal 0.5*(-1.91997468490338e-06+1.34549495909019e-06)
+variable C5${dir} equal 0.5*(${C5neg}+${C5pos})
+variable C52 equal 0.5*(${C5neg}+${C5pos})
+variable C52 equal 0.5*(-1.57676196194688e-06+${C5pos})
+variable C52 equal 0.5*(-1.57676196194688e-06+1.72194812557259e-06)
+variable C6${dir} equal 0.5*(${C6neg}+${C6pos})
+variable C62 equal 0.5*(${C6neg}+${C6pos})
+variable C62 equal 0.5*(-3.75924867328687e-06+${C6pos})
+variable C62 equal 0.5*(-3.75924867328687e-06+1.56729853344926e-06)
+
+# Delete dir to make sure it is not reused
+
+variable dir delete
+
+# uzz Perturbation
+
+variable dir equal 3
+include displace.mod
+# NOTE: This script should not need to be
+# modified. See in.elastic for more info.
+#
+# Find which reference length to use
+
+if "${dir} == 1" then    "variable len0 equal ${lx0}"
+if "${dir} == 2" then    "variable len0 equal ${ly0}"
+if "${dir} == 3" then    "variable len0 equal ${lz0}"
+variable len0 equal ${lz0}
+variable len0 equal 7.80058364599961
+if "${dir} == 4" then    "variable len0 equal ${lz0}"
+if "${dir} == 5" then    "variable len0 equal ${lz0}"
+if "${dir} == 6" then    "variable len0 equal ${ly0}"
+
+# Reset box and simulation parameters
+
+clear
+box tilt large
+read_restart restart.equil
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 0 0)
+  1 by 1 by 1 MPI processor grid
+  48 atoms
+include potential.mod
+# NOTE: This script can be modified for different pair styles
+# See in.elastic for more info.
+
+# Choose potential
+pair_style     rebo
+pair_coeff     * * CH.airebo C
+Reading potential file CH.airebo with DATE: 2011-10-25
+
+#pair_style     lcbop
+#pair_coeff     C.lcbop
+#pair_style     tersoff
+#pair_coeff     BNC.tersoff
+
+
+# Setup neighbor style
+neighbor 1.0 nsq
+neigh_modify once no every 1 delay 0 check yes
+
+# Setup minimization style
+min_style	     cg
+min_modify	     dmax ${dmax} line quadratic
+min_modify	     dmax 0.01 line quadratic
+
+# Setup output
+thermo		500
+thermo_style custom step temp pe press pxx pyy pzz pxy pxz pyz lx ly lz vol
+thermo_modify norm no
+
+
+# Output
+dump            1 all xtc 100 traj.xtc
+dump            2 all xyz 2000 relaxed.xyz
+#dump            4 all atom 10 dump.atom
+
+# Negative deformation
+
+variable delta equal -${up}*${len0}
+variable delta equal -1.0e-5*${len0}
+variable delta equal -1.0e-5*7.80058364599961
+variable deltaxy equal -${up}*xy
+variable deltaxy equal -1.0e-5*xy
+variable deltaxz equal -${up}*xz
+variable deltaxz equal -1.0e-5*xz
+variable deltayz equal -${up}*yz
+variable deltayz equal -1.0e-5*yz
+if "${dir} == 1" then    "change_box all x delta 0 ${delta} xy delta ${deltaxy} xz delta ${deltaxz} remap units box"
+if "${dir} == 2" then    "change_box all y delta 0 ${delta} yz delta ${deltayz} remap units box"
+if "${dir} == 3" then    "change_box all z delta 0 ${delta} remap units box"
+change_box all z delta 0 ${delta} remap units box
+change_box all z delta 0 -7.80058364599961e-05 remap units box
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80021) with tilt (0 0 0)
+if "${dir} == 4" then    "change_box all yz delta ${delta} remap units box"
+if "${dir} == 5" then    "change_box all xz delta ${delta} remap units box"
+if "${dir} == 6" then    "change_box all xy delta ${delta} remap units box"
+
+# Relax atoms positions
+
+minimize ${etol} ${ftol} ${maxiter} ${maxeval}
+minimize 0 ${ftol} ${maxiter} ${maxeval}
+minimize 0 1e-10 ${maxiter} ${maxeval}
+minimize 0 1e-10 10000000 ${maxeval}
+minimize 0 1e-10 10000000 10000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair rebo, perpetual
+      attributes: full, newton on, ghost
+      pair build: full/nsq/ghost
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 4.905 | 4.905 | 4.905 Mbytes
+Step Temp PotEng Press Pxx Pyy Pzz Pxy Pxz Pyz Lx Ly Lz Volume 
+     157            0   -341.70536    23.010529    6.6436737    13.643204     48.74471    4.4867768    0.6787889  -0.02397189    7.8005836    7.8005836    7.8005056    474.65379 
+     209            0   -341.70536    21.340937    18.567754    18.567754    26.887303 -2.4657052e-07 -3.4084419e-08 -6.2511585e-08    7.8005836    7.8005836    7.8005056    474.65379 
+Loop time of 0.022897 on 1 procs for 52 steps with 48 atoms
+
+79.9% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+        -341.705356185     -341.705356384     -341.705356384
+  Force two-norm initial, final = 0.00604653 9.48091e-11
+  Force max component initial, final = 0.00143856 2.68386e-11
+  Final line search alpha, max atom move = 1 2.68386e-11
+  Iterations, force evaluations = 52 104
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.022154   | 0.022154   | 0.022154   |   0.0 | 96.76
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.0003798  | 0.0003798  | 0.0003798  |   0.0 |  1.66
+Output  | 2.2888e-05 | 2.2888e-05 | 2.2888e-05 |   0.0 |  0.10
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0003402  |            |       |  1.49
+
+Nlocal:    48 ave 48 max 48 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    1032 ave 1032 max 1032 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:  7152 ave 7152 max 7152 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 7152
+Ave neighs/atom = 149
+Neighbor list builds = 0
+Dangerous builds = 0
+
+# Obtain new stress tensor
+
+variable tmp equal pxx
+variable pxx1 equal ${tmp}
+variable pxx1 equal 18.5677539388217
+variable tmp equal pyy
+variable pyy1 equal ${tmp}
+variable pyy1 equal 18.5677539271433
+variable tmp equal pzz
+variable pzz1 equal ${tmp}
+variable pzz1 equal 26.8873031622983
+variable tmp equal pxy
+variable pxy1 equal ${tmp}
+variable pxy1 equal -2.46570517926436e-07
+variable tmp equal pxz
+variable pxz1 equal ${tmp}
+variable pxz1 equal -3.40844185052294e-08
+variable tmp equal pyz
+variable pyz1 equal ${tmp}
+variable pyz1 equal -6.25115850340873e-08
+
+# Compute elastic constant from pressure tensor
+
+variable C1neg equal ${d1}
+variable C1neg equal 185.677537979745
+variable C2neg equal ${d2}
+variable C2neg equal 185.677539090951
+variable C3neg equal ${d3}
+variable C3neg equal 268.873030032886
+variable C4neg equal ${d4}
+variable C4neg equal -1.95421200211067e-06
+variable C5neg equal ${d5}
+variable C5neg equal -1.68064313893748e-06
+variable C6neg equal ${d6}
+variable C6neg equal -3.79100138658562e-06
+
+# Reset box and simulation parameters
+
+clear
+box tilt large
+read_restart restart.equil
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 0 0)
+  1 by 1 by 1 MPI processor grid
+  48 atoms
+include potential.mod
+# NOTE: This script can be modified for different pair styles
+# See in.elastic for more info.
+
+# Choose potential
+pair_style     rebo
+pair_coeff     * * CH.airebo C
+Reading potential file CH.airebo with DATE: 2011-10-25
+
+#pair_style     lcbop
+#pair_coeff     C.lcbop
+#pair_style     tersoff
+#pair_coeff     BNC.tersoff
+
+
+# Setup neighbor style
+neighbor 1.0 nsq
+neigh_modify once no every 1 delay 0 check yes
+
+# Setup minimization style
+min_style	     cg
+min_modify	     dmax ${dmax} line quadratic
+min_modify	     dmax 0.01 line quadratic
+
+# Setup output
+thermo		500
+thermo_style custom step temp pe press pxx pyy pzz pxy pxz pyz lx ly lz vol
+thermo_modify norm no
+
+
+# Output
+dump            1 all xtc 100 traj.xtc
+dump            2 all xyz 2000 relaxed.xyz
+#dump            4 all atom 10 dump.atom
+
+# Positive deformation
+
+variable delta equal ${up}*${len0}
+variable delta equal 1.0e-5*${len0}
+variable delta equal 1.0e-5*7.80058364599961
+variable deltaxy equal ${up}*xy
+variable deltaxy equal 1.0e-5*xy
+variable deltaxz equal ${up}*xz
+variable deltaxz equal 1.0e-5*xz
+variable deltayz equal ${up}*yz
+variable deltayz equal 1.0e-5*yz
+if "${dir} == 1" then    "change_box all x delta 0 ${delta} xy delta ${deltaxy} xz delta ${deltaxz} remap units box"
+if "${dir} == 2" then    "change_box all y delta 0 ${delta} yz delta ${deltayz} remap units box"
+if "${dir} == 3" then    "change_box all z delta 0 ${delta} remap units box"
+change_box all z delta 0 ${delta} remap units box
+change_box all z delta 0 7.80058364599961e-05 remap units box
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80037) with tilt (0 0 0)
+if "${dir} == 4" then    "change_box all yz delta ${delta} remap units box"
+if "${dir} == 5" then    "change_box all xz delta ${delta} remap units box"
+if "${dir} == 6" then    "change_box all xy delta ${delta} remap units box"
+
+# Relax atoms positions
+
+minimize ${etol} ${ftol} ${maxiter} ${maxeval}
+minimize 0 ${ftol} ${maxiter} ${maxeval}
+minimize 0 1e-10 ${maxiter} ${maxeval}
+minimize 0 1e-10 10000000 ${maxeval}
+minimize 0 1e-10 10000000 10000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair rebo, perpetual
+      attributes: full, newton on, ghost
+      pair build: full/nsq/ghost
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 4.905 | 4.905 | 4.905 Mbytes
+Step Temp PotEng Press Pxx Pyy Pzz Pxy Pxz Pyz Lx Ly Lz Volume 
+     157            0   -341.70536   -23.030628   -12.035873   -5.0363821    -52.01963    4.4863336   0.67874566 -0.023995467    7.8005836    7.8005836    7.8006617    474.66328 
+     210            0   -341.70536   -21.340393   -18.566584   -18.566584   -26.888012 -2.7789908e-08 -3.1301636e-08 -2.597727e-08    7.8005836    7.8005836    7.8006617    474.66328 
+Loop time of 0.0179629 on 1 procs for 53 steps with 48 atoms
+
+99.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+        -341.705356175     -341.705356384     -341.705356384
+  Force two-norm initial, final = 0.00597821 7.46104e-11
+  Force max component initial, final = 0.00138499 1.91057e-11
+  Final line search alpha, max atom move = 1 1.91057e-11
+  Iterations, force evaluations = 53 106
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.017264   | 0.017264   | 0.017264   |   0.0 | 96.11
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00037408 | 0.00037408 | 0.00037408 |   0.0 |  2.08
+Output  | 2.0981e-05 | 2.0981e-05 | 2.0981e-05 |   0.0 |  0.12
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0003042  |            |       |  1.69
+
+Nlocal:    48 ave 48 max 48 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    1032 ave 1032 max 1032 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:  7152 ave 7152 max 7152 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 7152
+Ave neighs/atom = 149
+Neighbor list builds = 0
+Dangerous builds = 0
+
+# Obtain new stress tensor
+
+variable tmp equal pe
+variable e1 equal ${tmp}
+variable e1 equal -341.705356383521
+variable tmp equal press
+variable p1 equal ${tmp}
+variable p1 equal -21.340393161878
+variable tmp equal pxx
+variable pxx1 equal ${tmp}
+variable pxx1 equal -18.5665838621154
+variable tmp equal pyy
+variable pyy1 equal ${tmp}
+variable pyy1 equal -18.56658379657
+variable tmp equal pzz
+variable pzz1 equal ${tmp}
+variable pzz1 equal -26.8880118269487
+variable tmp equal pxy
+variable pxy1 equal ${tmp}
+variable pxy1 equal -2.77899075516025e-08
+variable tmp equal pxz
+variable pxz1 equal ${tmp}
+variable pxz1 equal -3.13016356914419e-08
+variable tmp equal pyz
+variable pyz1 equal ${tmp}
+variable pyz1 equal -2.59772697314763e-08
+
+# Compute elastic constant from pressure tensor
+
+variable C1pos equal ${d1}
+variable C1pos equal 185.665840029626
+variable C2pos equal ${d2}
+variable C2pos equal 185.665838146182
+variable C3pos equal ${d3}
+variable C3pos equal 268.880119859584
+variable C4pos equal ${d4}
+variable C4pos equal 1.58886884908456e-06
+variable C5pos equal ${d5}
+variable C5pos equal 1.65281531079961e-06
+variable C6pos equal ${d6}
+variable C6pos equal 1.60319528283728e-06
+
+# Combine positive and negative
+
+variable C1${dir} equal 0.5*(${C1neg}+${C1pos})
+variable C13 equal 0.5*(${C1neg}+${C1pos})
+variable C13 equal 0.5*(185.677537979745+${C1pos})
+variable C13 equal 0.5*(185.677537979745+185.665840029626)
+variable C2${dir} equal 0.5*(${C2neg}+${C2pos})
+variable C23 equal 0.5*(${C2neg}+${C2pos})
+variable C23 equal 0.5*(185.677539090951+${C2pos})
+variable C23 equal 0.5*(185.677539090951+185.665838146182)
+variable C3${dir} equal 0.5*(${C3neg}+${C3pos})
+variable C33 equal 0.5*(${C3neg}+${C3pos})
+variable C33 equal 0.5*(268.873030032886+${C3pos})
+variable C33 equal 0.5*(268.873030032886+268.880119859584)
+variable C4${dir} equal 0.5*(${C4neg}+${C4pos})
+variable C43 equal 0.5*(${C4neg}+${C4pos})
+variable C43 equal 0.5*(-1.95421200211067e-06+${C4pos})
+variable C43 equal 0.5*(-1.95421200211067e-06+1.58886884908456e-06)
+variable C5${dir} equal 0.5*(${C5neg}+${C5pos})
+variable C53 equal 0.5*(${C5neg}+${C5pos})
+variable C53 equal 0.5*(-1.68064313893748e-06+${C5pos})
+variable C53 equal 0.5*(-1.68064313893748e-06+1.65281531079961e-06)
+variable C6${dir} equal 0.5*(${C6neg}+${C6pos})
+variable C63 equal 0.5*(${C6neg}+${C6pos})
+variable C63 equal 0.5*(-3.79100138658562e-06+${C6pos})
+variable C63 equal 0.5*(-3.79100138658562e-06+1.60319528283728e-06)
+
+# Delete dir to make sure it is not reused
+
+variable dir delete
+
+# uyz Perturbation
+
+variable dir equal 4
+include displace.mod
+# NOTE: This script should not need to be
+# modified. See in.elastic for more info.
+#
+# Find which reference length to use
+
+if "${dir} == 1" then    "variable len0 equal ${lx0}"
+if "${dir} == 2" then    "variable len0 equal ${ly0}"
+if "${dir} == 3" then    "variable len0 equal ${lz0}"
+if "${dir} == 4" then    "variable len0 equal ${lz0}"
+variable len0 equal ${lz0}
+variable len0 equal 7.80058364599961
+if "${dir} == 5" then    "variable len0 equal ${lz0}"
+if "${dir} == 6" then    "variable len0 equal ${ly0}"
+
+# Reset box and simulation parameters
+
+clear
+box tilt large
+read_restart restart.equil
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 0 0)
+  1 by 1 by 1 MPI processor grid
+  48 atoms
+include potential.mod
+# NOTE: This script can be modified for different pair styles
+# See in.elastic for more info.
+
+# Choose potential
+pair_style     rebo
+pair_coeff     * * CH.airebo C
+Reading potential file CH.airebo with DATE: 2011-10-25
+
+#pair_style     lcbop
+#pair_coeff     C.lcbop
+#pair_style     tersoff
+#pair_coeff     BNC.tersoff
+
+
+# Setup neighbor style
+neighbor 1.0 nsq
+neigh_modify once no every 1 delay 0 check yes
+
+# Setup minimization style
+min_style	     cg
+min_modify	     dmax ${dmax} line quadratic
+min_modify	     dmax 0.01 line quadratic
+
+# Setup output
+thermo		500
+thermo_style custom step temp pe press pxx pyy pzz pxy pxz pyz lx ly lz vol
+thermo_modify norm no
+
+
+# Output
+dump            1 all xtc 100 traj.xtc
+dump            2 all xyz 2000 relaxed.xyz
+#dump            4 all atom 10 dump.atom
+
+# Negative deformation
+
+variable delta equal -${up}*${len0}
+variable delta equal -1.0e-5*${len0}
+variable delta equal -1.0e-5*7.80058364599961
+variable deltaxy equal -${up}*xy
+variable deltaxy equal -1.0e-5*xy
+variable deltaxz equal -${up}*xz
+variable deltaxz equal -1.0e-5*xz
+variable deltayz equal -${up}*yz
+variable deltayz equal -1.0e-5*yz
+if "${dir} == 1" then    "change_box all x delta 0 ${delta} xy delta ${deltaxy} xz delta ${deltaxz} remap units box"
+if "${dir} == 2" then    "change_box all y delta 0 ${delta} yz delta ${deltayz} remap units box"
+if "${dir} == 3" then    "change_box all z delta 0 ${delta} remap units box"
+if "${dir} == 4" then    "change_box all yz delta ${delta} remap units box"
+change_box all yz delta ${delta} remap units box
+change_box all yz delta -7.80058364599961e-05 remap units box
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 0 -7.80058e-05)
+if "${dir} == 5" then    "change_box all xz delta ${delta} remap units box"
+if "${dir} == 6" then    "change_box all xy delta ${delta} remap units box"
+
+# Relax atoms positions
+
+minimize ${etol} ${ftol} ${maxiter} ${maxeval}
+minimize 0 ${ftol} ${maxiter} ${maxeval}
+minimize 0 1e-10 ${maxiter} ${maxeval}
+minimize 0 1e-10 10000000 ${maxeval}
+minimize 0 1e-10 10000000 10000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair rebo, perpetual
+      attributes: full, newton on, ghost
+      pair build: full/nsq/ghost
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 4.905 | 4.905 | 4.905 Mbytes
+Step Temp PotEng Press Pxx Pyy Pzz Pxy Pxz Pyz Lx Ly Lz Volume 
+     157            0   -341.70536 -0.010728778   -2.6962719    4.3030823   -1.6389967    4.4865985   0.67896033    20.890084    7.8005836    7.8005836    7.8005836    474.65854 
+     209            0   -341.70536 -0.00012078497 -2.5067857e-05 -0.00020684275 -0.00013044431 -5.867429e-09 1.8866312e-08    5.8982722    7.8005836    7.8005836    7.8005836    474.65854 
+Loop time of 0.019547 on 1 procs for 52 steps with 48 atoms
+
+97.2% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+        -341.705356224     -341.705356415     -341.705356415
+  Force two-norm initial, final = 0.00596073 9.48437e-11
+  Force max component initial, final = 0.00116873 1.92252e-11
+  Final line search alpha, max atom move = 1 1.92252e-11
+  Iterations, force evaluations = 52 104
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.018403   | 0.018403   | 0.018403   |   0.0 | 94.15
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00059319 | 0.00059319 | 0.00059319 |   0.0 |  3.03
+Output  | 2.8849e-05 | 2.8849e-05 | 2.8849e-05 |   0.0 |  0.15
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0005221  |            |       |  2.67
+
+Nlocal:    48 ave 48 max 48 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    1032 ave 1032 max 1032 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:  7152 ave 7152 max 7152 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 7152
+Ave neighs/atom = 149
+Neighbor list builds = 0
+Dangerous builds = 0
+
+# Obtain new stress tensor
+
+variable tmp equal pxx
+variable pxx1 equal ${tmp}
+variable pxx1 equal -2.50678565305123e-05
+variable tmp equal pyy
+variable pyy1 equal ${tmp}
+variable pyy1 equal -0.000206842746418004
+variable tmp equal pzz
+variable pzz1 equal ${tmp}
+variable pzz1 equal -0.000130444307529
+variable tmp equal pxy
+variable pxy1 equal ${tmp}
+variable pxy1 equal -5.86742901683274e-09
+variable tmp equal pxz
+variable pxz1 equal ${tmp}
+variable pxz1 equal 1.88663119641967e-08
+variable tmp equal pyz
+variable pyz1 equal ${tmp}
+variable pyz1 equal 5.89827218403383
+
+# Compute elastic constant from pressure tensor
+
+variable C1neg equal ${d1}
+variable C1neg equal -0.000252087036825102
+variable C2neg equal ${d2}
+variable C2neg equal -0.00206860794655143
+variable C3neg equal ${d3}
+variable C3neg equal -0.00130603317216268
+variable C4neg equal ${d4}
+variable C4neg equal 58.9827205112422
+variable C5neg equal ${d5}
+variable C5neg equal -1.15113583424322e-06
+variable C6neg equal ${d6}
+variable C6neg equal -1.38397049748959e-06
+
+# Reset box and simulation parameters
+
+clear
+box tilt large
+read_restart restart.equil
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 0 0)
+  1 by 1 by 1 MPI processor grid
+  48 atoms
+include potential.mod
+# NOTE: This script can be modified for different pair styles
+# See in.elastic for more info.
+
+# Choose potential
+pair_style     rebo
+pair_coeff     * * CH.airebo C
+Reading potential file CH.airebo with DATE: 2011-10-25
+
+#pair_style     lcbop
+#pair_coeff     C.lcbop
+#pair_style     tersoff
+#pair_coeff     BNC.tersoff
+
+
+# Setup neighbor style
+neighbor 1.0 nsq
+neigh_modify once no every 1 delay 0 check yes
+
+# Setup minimization style
+min_style	     cg
+min_modify	     dmax ${dmax} line quadratic
+min_modify	     dmax 0.01 line quadratic
+
+# Setup output
+thermo		500
+thermo_style custom step temp pe press pxx pyy pzz pxy pxz pyz lx ly lz vol
+thermo_modify norm no
+
+
+# Output
+dump            1 all xtc 100 traj.xtc
+dump            2 all xyz 2000 relaxed.xyz
+#dump            4 all atom 10 dump.atom
+
+# Positive deformation
+
+variable delta equal ${up}*${len0}
+variable delta equal 1.0e-5*${len0}
+variable delta equal 1.0e-5*7.80058364599961
+variable deltaxy equal ${up}*xy
+variable deltaxy equal 1.0e-5*xy
+variable deltaxz equal ${up}*xz
+variable deltaxz equal 1.0e-5*xz
+variable deltayz equal ${up}*yz
+variable deltayz equal 1.0e-5*yz
+if "${dir} == 1" then    "change_box all x delta 0 ${delta} xy delta ${deltaxy} xz delta ${deltaxz} remap units box"
+if "${dir} == 2" then    "change_box all y delta 0 ${delta} yz delta ${deltayz} remap units box"
+if "${dir} == 3" then    "change_box all z delta 0 ${delta} remap units box"
+if "${dir} == 4" then    "change_box all yz delta ${delta} remap units box"
+change_box all yz delta ${delta} remap units box
+change_box all yz delta 7.80058364599961e-05 remap units box
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 0 7.80058e-05)
+if "${dir} == 5" then    "change_box all xz delta ${delta} remap units box"
+if "${dir} == 6" then    "change_box all xy delta ${delta} remap units box"
+
+# Relax atoms positions
+
+minimize ${etol} ${ftol} ${maxiter} ${maxeval}
+minimize 0 ${ftol} ${maxiter} ${maxeval}
+minimize 0 1e-10 ${maxiter} ${maxeval}
+minimize 0 1e-10 10000000 ${maxeval}
+minimize 0 1e-10 10000000 10000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair rebo, perpetual
+      attributes: full, newton on, ghost
+      pair build: full/nsq/ghost
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 4.905 | 4.905 | 4.905 Mbytes
+Step Temp PotEng Press Pxx Pyy Pzz Pxy Pxz Pyz Lx Ly Lz Volume 
+     157            0   -341.70536 -0.010743358   -2.6962778     4.303068   -1.6390203    4.4865118   0.67857423   -20.938051    7.8005836    7.8005836    7.8005836    474.65854 
+     209            0   -341.70536 -0.00012078369 -2.5075884e-05 -0.00020684024 -0.00013043495 -3.067612e-08 2.1876288e-08   -5.8982722    7.8005836    7.8005836    7.8005836    474.65854 
+Loop time of 0.0233202 on 1 procs for 52 steps with 48 atoms
+
+79.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+        -341.705356224     -341.705356415     -341.705356415
+  Force two-norm initial, final = 0.0059762 9.25969e-11
+  Force max component initial, final = 0.00111537 1.95279e-11
+  Final line search alpha, max atom move = 1 1.95279e-11
+  Iterations, force evaluations = 52 104
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.022586   | 0.022586   | 0.022586   |   0.0 | 96.85
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00038791 | 0.00038791 | 0.00038791 |   0.0 |  1.66
+Output  | 2.0027e-05 | 2.0027e-05 | 2.0027e-05 |   0.0 |  0.09
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0003266  |            |       |  1.40
+
+Nlocal:    48 ave 48 max 48 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    1032 ave 1032 max 1032 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:  7152 ave 7152 max 7152 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 7152
+Ave neighs/atom = 149
+Neighbor list builds = 0
+Dangerous builds = 0
+
+# Obtain new stress tensor
+
+variable tmp equal pe
+variable e1 equal ${tmp}
+variable e1 equal -341.705356414613
+variable tmp equal press
+variable p1 equal ${tmp}
+variable p1 equal -0.000120783693267912
+variable tmp equal pxx
+variable pxx1 equal ${tmp}
+variable pxx1 equal -2.50758840068469e-05
+variable tmp equal pyy
+variable pyy1 equal ${tmp}
+variable pyy1 equal -0.000206840243101543
+variable tmp equal pzz
+variable pzz1 equal ${tmp}
+variable pzz1 equal -0.000130434952695345
+variable tmp equal pxy
+variable pxy1 equal ${tmp}
+variable pxy1 equal -3.06761195925078e-08
+variable tmp equal pxz
+variable pxz1 equal ${tmp}
+variable pxz1 equal 2.1876287685165e-08
+variable tmp equal pyz
+variable pyz1 equal ${tmp}
+variable pyz1 equal -5.8982721512209
+
+# Compute elastic constant from pressure tensor
+
+variable C1pos equal ${d1}
+variable C1pos equal 0.000252167311588448
+variable C2pos equal ${d2}
+variable C2pos equal 0.00206858291338682
+variable C3pos equal ${d3}
+variable C3pos equal 0.00130593962382613
+variable C4pos equal ${d4}
+variable C4pos equal 58.9827228413051
+variable C5pos equal ${d5}
+variable C5pos equal 1.12103607703354e-06
+variable C6pos equal ${d6}
+variable C6pos equal 1.63205740324634e-06
+
+# Combine positive and negative
+
+variable C1${dir} equal 0.5*(${C1neg}+${C1pos})
+variable C14 equal 0.5*(${C1neg}+${C1pos})
+variable C14 equal 0.5*(-0.000252087036825102+${C1pos})
+variable C14 equal 0.5*(-0.000252087036825102+0.000252167311588448)
+variable C2${dir} equal 0.5*(${C2neg}+${C2pos})
+variable C24 equal 0.5*(${C2neg}+${C2pos})
+variable C24 equal 0.5*(-0.00206860794655143+${C2pos})
+variable C24 equal 0.5*(-0.00206860794655143+0.00206858291338682)
+variable C3${dir} equal 0.5*(${C3neg}+${C3pos})
+variable C34 equal 0.5*(${C3neg}+${C3pos})
+variable C34 equal 0.5*(-0.00130603317216268+${C3pos})
+variable C34 equal 0.5*(-0.00130603317216268+0.00130593962382613)
+variable C4${dir} equal 0.5*(${C4neg}+${C4pos})
+variable C44 equal 0.5*(${C4neg}+${C4pos})
+variable C44 equal 0.5*(58.9827205112422+${C4pos})
+variable C44 equal 0.5*(58.9827205112422+58.9827228413051)
+variable C5${dir} equal 0.5*(${C5neg}+${C5pos})
+variable C54 equal 0.5*(${C5neg}+${C5pos})
+variable C54 equal 0.5*(-1.15113583424322e-06+${C5pos})
+variable C54 equal 0.5*(-1.15113583424322e-06+1.12103607703354e-06)
+variable C6${dir} equal 0.5*(${C6neg}+${C6pos})
+variable C64 equal 0.5*(${C6neg}+${C6pos})
+variable C64 equal 0.5*(-1.38397049748959e-06+${C6pos})
+variable C64 equal 0.5*(-1.38397049748959e-06+1.63205740324634e-06)
+
+# Delete dir to make sure it is not reused
+
+variable dir delete
+
+# uxz Perturbation
+
+variable dir equal 5
+include displace.mod
+# NOTE: This script should not need to be
+# modified. See in.elastic for more info.
+#
+# Find which reference length to use
+
+if "${dir} == 1" then    "variable len0 equal ${lx0}"
+if "${dir} == 2" then    "variable len0 equal ${ly0}"
+if "${dir} == 3" then    "variable len0 equal ${lz0}"
+if "${dir} == 4" then    "variable len0 equal ${lz0}"
+if "${dir} == 5" then    "variable len0 equal ${lz0}"
+variable len0 equal ${lz0}
+variable len0 equal 7.80058364599961
+if "${dir} == 6" then    "variable len0 equal ${ly0}"
+
+# Reset box and simulation parameters
+
+clear
+box tilt large
+read_restart restart.equil
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 0 0)
+  1 by 1 by 1 MPI processor grid
+  48 atoms
+include potential.mod
+# NOTE: This script can be modified for different pair styles
+# See in.elastic for more info.
+
+# Choose potential
+pair_style     rebo
+pair_coeff     * * CH.airebo C
+Reading potential file CH.airebo with DATE: 2011-10-25
+
+#pair_style     lcbop
+#pair_coeff     C.lcbop
+#pair_style     tersoff
+#pair_coeff     BNC.tersoff
+
+
+# Setup neighbor style
+neighbor 1.0 nsq
+neigh_modify once no every 1 delay 0 check yes
+
+# Setup minimization style
+min_style	     cg
+min_modify	     dmax ${dmax} line quadratic
+min_modify	     dmax 0.01 line quadratic
+
+# Setup output
+thermo		500
+thermo_style custom step temp pe press pxx pyy pzz pxy pxz pyz lx ly lz vol
+thermo_modify norm no
+
+
+# Output
+dump            1 all xtc 100 traj.xtc
+dump            2 all xyz 2000 relaxed.xyz
+#dump            4 all atom 10 dump.atom
+
+# Negative deformation
+
+variable delta equal -${up}*${len0}
+variable delta equal -1.0e-5*${len0}
+variable delta equal -1.0e-5*7.80058364599961
+variable deltaxy equal -${up}*xy
+variable deltaxy equal -1.0e-5*xy
+variable deltaxz equal -${up}*xz
+variable deltaxz equal -1.0e-5*xz
+variable deltayz equal -${up}*yz
+variable deltayz equal -1.0e-5*yz
+if "${dir} == 1" then    "change_box all x delta 0 ${delta} xy delta ${deltaxy} xz delta ${deltaxz} remap units box"
+if "${dir} == 2" then    "change_box all y delta 0 ${delta} yz delta ${deltayz} remap units box"
+if "${dir} == 3" then    "change_box all z delta 0 ${delta} remap units box"
+if "${dir} == 4" then    "change_box all yz delta ${delta} remap units box"
+if "${dir} == 5" then    "change_box all xz delta ${delta} remap units box"
+change_box all xz delta ${delta} remap units box
+change_box all xz delta -7.80058364599961e-05 remap units box
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 -7.80058e-05 0)
+if "${dir} == 6" then    "change_box all xy delta ${delta} remap units box"
+
+# Relax atoms positions
+
+minimize ${etol} ${ftol} ${maxiter} ${maxeval}
+minimize 0 ${ftol} ${maxiter} ${maxeval}
+minimize 0 1e-10 ${maxiter} ${maxeval}
+minimize 0 1e-10 10000000 ${maxeval}
+minimize 0 1e-10 10000000 10000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair rebo, perpetual
+      attributes: full, newton on, ghost
+      pair build: full/nsq/ghost
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 4.905 | 4.905 | 4.905 Mbytes
+Step Temp PotEng Press Pxx Pyy Pzz Pxy Pxz Pyz Lx Ly Lz Volume 
+     157            0   -341.70536 -0.010698751   -2.6964113     4.303302   -1.6389869    4.4865752    21.592796 -0.023790628    7.8005836    7.8005836    7.8005836    474.65854 
+     209            0   -341.70536 -0.00012078816 -0.00020679961 -2.5137567e-05 -0.0001304273 -1.9677641e-08    5.8982723 4.4550039e-09    7.8005836    7.8005836    7.8005836    474.65854 
+Loop time of 0.0177732 on 1 procs for 52 steps with 48 atoms
+
+98.9% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+        -341.705356222     -341.705356415     -341.705356415
+  Force two-norm initial, final = 0.00604486 8.46602e-11
+  Force max component initial, final = 0.00116873 1.65725e-11
+  Final line search alpha, max atom move = 1 1.65725e-11
+  Iterations, force evaluations = 52 104
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.017083   | 0.017083   | 0.017083   |   0.0 | 96.12
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00035882 | 0.00035882 | 0.00035882 |   0.0 |  2.02
+Output  | 2.7895e-05 | 2.7895e-05 | 2.7895e-05 |   0.0 |  0.16
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.000303   |            |       |  1.70
+
+Nlocal:    48 ave 48 max 48 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    1032 ave 1032 max 1032 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:  7152 ave 7152 max 7152 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 7152
+Ave neighs/atom = 149
+Neighbor list builds = 0
+Dangerous builds = 0
+
+# Obtain new stress tensor
+
+variable tmp equal pxx
+variable pxx1 equal ${tmp}
+variable pxx1 equal -0.000206799606930318
+variable tmp equal pyy
+variable pyy1 equal ${tmp}
+variable pyy1 equal -2.51375667737443e-05
+variable tmp equal pzz
+variable pzz1 equal ${tmp}
+variable pzz1 equal -0.000130427304463959
+variable tmp equal pxy
+variable pxy1 equal ${tmp}
+variable pxy1 equal -1.96776413262356e-08
+variable tmp equal pxz
+variable pxz1 equal ${tmp}
+variable pxz1 equal 5.89827226447873
+variable tmp equal pyz
+variable pyz1 equal ${tmp}
+variable pyz1 equal 4.45500390573594e-09
+
+# Compute elastic constant from pressure tensor
+
+variable C1neg equal ${d1}
+variable C1neg equal -0.00206940454082316
+variable C2neg equal ${d2}
+variable C2neg equal -0.000251556150108829
+variable C3neg equal ${d3}
+variable C3neg equal -0.00130586314151227
+variable C4neg equal ${d4}
+variable C4neg equal -1.28454611271244e-06
+variable C5neg equal ${d5}
+variable C5neg equal 58.9827213049883
+variable C6neg equal ${d6}
+variable C6neg equal -1.52207262058362e-06
+
+# Reset box and simulation parameters
+
+clear
+box tilt large
+read_restart restart.equil
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 0 0)
+  1 by 1 by 1 MPI processor grid
+  48 atoms
+include potential.mod
+# NOTE: This script can be modified for different pair styles
+# See in.elastic for more info.
+
+# Choose potential
+pair_style     rebo
+pair_coeff     * * CH.airebo C
+Reading potential file CH.airebo with DATE: 2011-10-25
+
+#pair_style     lcbop
+#pair_coeff     C.lcbop
+#pair_style     tersoff
+#pair_coeff     BNC.tersoff
+
+
+# Setup neighbor style
+neighbor 1.0 nsq
+neigh_modify once no every 1 delay 0 check yes
+
+# Setup minimization style
+min_style	     cg
+min_modify	     dmax ${dmax} line quadratic
+min_modify	     dmax 0.01 line quadratic
+
+# Setup output
+thermo		500
+thermo_style custom step temp pe press pxx pyy pzz pxy pxz pyz lx ly lz vol
+thermo_modify norm no
+
+
+# Output
+dump            1 all xtc 100 traj.xtc
+dump            2 all xyz 2000 relaxed.xyz
+#dump            4 all atom 10 dump.atom
+
+# Positive deformation
+
+variable delta equal ${up}*${len0}
+variable delta equal 1.0e-5*${len0}
+variable delta equal 1.0e-5*7.80058364599961
+variable deltaxy equal ${up}*xy
+variable deltaxy equal 1.0e-5*xy
+variable deltaxz equal ${up}*xz
+variable deltaxz equal 1.0e-5*xz
+variable deltayz equal ${up}*yz
+variable deltayz equal 1.0e-5*yz
+if "${dir} == 1" then    "change_box all x delta 0 ${delta} xy delta ${deltaxy} xz delta ${deltaxz} remap units box"
+if "${dir} == 2" then    "change_box all y delta 0 ${delta} yz delta ${deltayz} remap units box"
+if "${dir} == 3" then    "change_box all z delta 0 ${delta} remap units box"
+if "${dir} == 4" then    "change_box all yz delta ${delta} remap units box"
+if "${dir} == 5" then    "change_box all xz delta ${delta} remap units box"
+change_box all xz delta ${delta} remap units box
+change_box all xz delta 7.80058364599961e-05 remap units box
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 7.80058e-05 0)
+if "${dir} == 6" then    "change_box all xy delta ${delta} remap units box"
+
+# Relax atoms positions
+
+minimize ${etol} ${ftol} ${maxiter} ${maxeval}
+minimize 0 ${ftol} ${maxiter} ${maxeval}
+minimize 0 1e-10 ${maxiter} ${maxeval}
+minimize 0 1e-10 10000000 ${maxeval}
+minimize 0 1e-10 10000000 10000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair rebo, perpetual
+      attributes: full, newton on, ghost
+      pair build: full/nsq/ghost
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 4.905 | 4.905 | 4.905 Mbytes
+Step Temp PotEng Press Pxx Pyy Pzz Pxy Pxz Pyz Lx Ly Lz Volume 
+     157            0   -341.70536 -0.010773386   -2.6964593    4.3031693   -1.6390301    4.4865351   -20.235262 -0.024176731    7.8005836    7.8005836    7.8005836    474.65854 
+     209            0   -341.70536 -0.00012078503 -0.00020679934 -2.5091595e-05 -0.00013046416 -1.9078419e-09   -5.8982722 -4.443012e-09    7.8005836    7.8005836    7.8005836    474.65854 
+Loop time of 0.0231121 on 1 procs for 52 steps with 48 atoms
+
+97.2% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+        -341.705356226     -341.705356415     -341.705356415
+  Force two-norm initial, final = 0.00589109 9.77306e-11
+  Force max component initial, final = 0.00111539 2.23986e-11
+  Final line search alpha, max atom move = 1 2.23986e-11
+  Iterations, force evaluations = 52 104
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.021913   | 0.021913   | 0.021913   |   0.0 | 94.81
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00064445 | 0.00064445 | 0.00064445 |   0.0 |  2.79
+Output  | 5.4121e-05 | 5.4121e-05 | 5.4121e-05 |   0.0 |  0.23
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0005007  |            |       |  2.17
+
+Nlocal:    48 ave 48 max 48 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    1032 ave 1032 max 1032 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:  7152 ave 7152 max 7152 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 7152
+Ave neighs/atom = 149
+Neighbor list builds = 0
+Dangerous builds = 0
+
+# Obtain new stress tensor
+
+variable tmp equal pe
+variable e1 equal ${tmp}
+variable e1 equal -341.705356414613
+variable tmp equal press
+variable p1 equal ${tmp}
+variable p1 equal -0.000120785031867672
+variable tmp equal pxx
+variable pxx1 equal ${tmp}
+variable pxx1 equal -0.000206799344606737
+variable tmp equal pyy
+variable pyy1 equal ${tmp}
+variable pyy1 equal -2.50915953156244e-05
+variable tmp equal pzz
+variable pzz1 equal ${tmp}
+variable pzz1 equal -0.000130464155680654
+variable tmp equal pxy
+variable pxy1 equal ${tmp}
+variable pxy1 equal -1.90784193170438e-09
+variable tmp equal pxz
+variable pxz1 equal ${tmp}
+variable pxz1 equal -5.89827220508567
+variable tmp equal pyz
+variable pyz1 equal ${tmp}
+variable pyz1 equal -4.44301197059264e-09
+
+# Compute elastic constant from pressure tensor
+
+variable C1pos equal ${d1}
+variable C1pos equal 0.00206940191758735
+variable C2pos equal ${d2}
+variable C2pos equal 0.00025109643552763
+variable C3pos equal ${d3}
+variable C3pos equal 0.00130623165367922
+variable C4pos equal ${d4}
+variable C4pos equal 1.37352627147573e-06
+variable C5pos equal ${d5}
+variable C5pos equal 58.9827233906557
+variable C6pos equal ${d6}
+variable C6pos equal 1.3443746266383e-06
+
+# Combine positive and negative
+
+variable C1${dir} equal 0.5*(${C1neg}+${C1pos})
+variable C15 equal 0.5*(${C1neg}+${C1pos})
+variable C15 equal 0.5*(-0.00206940454082316+${C1pos})
+variable C15 equal 0.5*(-0.00206940454082316+0.00206940191758735)
+variable C2${dir} equal 0.5*(${C2neg}+${C2pos})
+variable C25 equal 0.5*(${C2neg}+${C2pos})
+variable C25 equal 0.5*(-0.000251556150108829+${C2pos})
+variable C25 equal 0.5*(-0.000251556150108829+0.00025109643552763)
+variable C3${dir} equal 0.5*(${C3neg}+${C3pos})
+variable C35 equal 0.5*(${C3neg}+${C3pos})
+variable C35 equal 0.5*(-0.00130586314151227+${C3pos})
+variable C35 equal 0.5*(-0.00130586314151227+0.00130623165367922)
+variable C4${dir} equal 0.5*(${C4neg}+${C4pos})
+variable C45 equal 0.5*(${C4neg}+${C4pos})
+variable C45 equal 0.5*(-1.28454611271244e-06+${C4pos})
+variable C45 equal 0.5*(-1.28454611271244e-06+1.37352627147573e-06)
+variable C5${dir} equal 0.5*(${C5neg}+${C5pos})
+variable C55 equal 0.5*(${C5neg}+${C5pos})
+variable C55 equal 0.5*(58.9827213049883+${C5pos})
+variable C55 equal 0.5*(58.9827213049883+58.9827233906557)
+variable C6${dir} equal 0.5*(${C6neg}+${C6pos})
+variable C65 equal 0.5*(${C6neg}+${C6pos})
+variable C65 equal 0.5*(-1.52207262058362e-06+${C6pos})
+variable C65 equal 0.5*(-1.52207262058362e-06+1.3443746266383e-06)
+
+# Delete dir to make sure it is not reused
+
+variable dir delete
+
+# uxy Perturbation
+
+variable dir equal 6
+include displace.mod
+# NOTE: This script should not need to be
+# modified. See in.elastic for more info.
+#
+# Find which reference length to use
+
+if "${dir} == 1" then    "variable len0 equal ${lx0}"
+if "${dir} == 2" then    "variable len0 equal ${ly0}"
+if "${dir} == 3" then    "variable len0 equal ${lz0}"
+if "${dir} == 4" then    "variable len0 equal ${lz0}"
+if "${dir} == 5" then    "variable len0 equal ${lz0}"
+if "${dir} == 6" then    "variable len0 equal ${ly0}"
+variable len0 equal ${ly0}
+variable len0 equal 7.80058364599987
+
+# Reset box and simulation parameters
+
+clear
+box tilt large
+read_restart restart.equil
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 0 0)
+  1 by 1 by 1 MPI processor grid
+  48 atoms
+include potential.mod
+# NOTE: This script can be modified for different pair styles
+# See in.elastic for more info.
+
+# Choose potential
+pair_style     rebo
+pair_coeff     * * CH.airebo C
+Reading potential file CH.airebo with DATE: 2011-10-25
+
+#pair_style     lcbop
+#pair_coeff     C.lcbop
+#pair_style     tersoff
+#pair_coeff     BNC.tersoff
+
+
+# Setup neighbor style
+neighbor 1.0 nsq
+neigh_modify once no every 1 delay 0 check yes
+
+# Setup minimization style
+min_style	     cg
+min_modify	     dmax ${dmax} line quadratic
+min_modify	     dmax 0.01 line quadratic
+
+# Setup output
+thermo		500
+thermo_style custom step temp pe press pxx pyy pzz pxy pxz pyz lx ly lz vol
+thermo_modify norm no
+
+
+# Output
+dump            1 all xtc 100 traj.xtc
+dump            2 all xyz 2000 relaxed.xyz
+#dump            4 all atom 10 dump.atom
+
+# Negative deformation
+
+variable delta equal -${up}*${len0}
+variable delta equal -1.0e-5*${len0}
+variable delta equal -1.0e-5*7.80058364599987
+variable deltaxy equal -${up}*xy
+variable deltaxy equal -1.0e-5*xy
+variable deltaxz equal -${up}*xz
+variable deltaxz equal -1.0e-5*xz
+variable deltayz equal -${up}*yz
+variable deltayz equal -1.0e-5*yz
+if "${dir} == 1" then    "change_box all x delta 0 ${delta} xy delta ${deltaxy} xz delta ${deltaxz} remap units box"
+if "${dir} == 2" then    "change_box all y delta 0 ${delta} yz delta ${deltayz} remap units box"
+if "${dir} == 3" then    "change_box all z delta 0 ${delta} remap units box"
+if "${dir} == 4" then    "change_box all yz delta ${delta} remap units box"
+if "${dir} == 5" then    "change_box all xz delta ${delta} remap units box"
+if "${dir} == 6" then    "change_box all xy delta ${delta} remap units box"
+change_box all xy delta ${delta} remap units box
+change_box all xy delta -7.80058364599987e-05 remap units box
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (-7.80058e-05 0 0)
+
+# Relax atoms positions
+
+minimize ${etol} ${ftol} ${maxiter} ${maxeval}
+minimize 0 ${ftol} ${maxiter} ${maxeval}
+minimize 0 1e-10 ${maxiter} ${maxeval}
+minimize 0 1e-10 10000000 ${maxeval}
+minimize 0 1e-10 10000000 10000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair rebo, perpetual
+      attributes: full, newton on, ghost
+      pair build: full/nsq/ghost
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 4.905 | 4.905 | 4.905 Mbytes
+Step Temp PotEng Press Pxx Pyy Pzz Pxy Pxz Pyz Lx Ly Lz Volume 
+     157            0   -341.70536 -0.010564895    -2.696292    4.3034817   -1.6388844    25.400506   0.67878735 -0.023933522    7.8005836    7.8005836    7.8005836    474.65854 
+     209            0   -341.70536 -0.00012078316 -0.00020680439 -0.00013047066 -2.5074431e-05    5.8982722 2.0131461e-08 -4.628887e-09    7.8005836    7.8005836    7.8005836    474.65854 
+Loop time of 0.0236351 on 1 procs for 52 steps with 48 atoms
+
+79.1% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+        -341.705356211     -341.705356415     -341.705356415
+  Force two-norm initial, final = 0.00619726 9.05047e-11
+  Force max component initial, final = 0.00125232 2.08612e-11
+  Final line search alpha, max atom move = 1 2.08612e-11
+  Iterations, force evaluations = 52 104
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.022878   | 0.022878   | 0.022878   |   0.0 | 96.80
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00040174 | 0.00040174 | 0.00040174 |   0.0 |  1.70
+Output  | 2.408e-05  | 2.408e-05  | 2.408e-05  |   0.0 |  0.10
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0003312  |            |       |  1.40
+
+Nlocal:    48 ave 48 max 48 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    1032 ave 1032 max 1032 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:  7152 ave 7152 max 7152 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 7152
+Ave neighs/atom = 149
+Neighbor list builds = 0
+Dangerous builds = 0
+
+# Obtain new stress tensor
+
+variable tmp equal pxx
+variable pxx1 equal ${tmp}
+variable pxx1 equal -0.000206804389089205
+variable tmp equal pyy
+variable pyy1 equal ${tmp}
+variable pyy1 equal -0.000130470662429714
+variable tmp equal pzz
+variable pzz1 equal ${tmp}
+variable pzz1 equal -2.50744307342067e-05
+variable tmp equal pxy
+variable pxy1 equal ${tmp}
+variable pxy1 equal 5.89827217190099
+variable tmp equal pxz
+variable pxz1 equal ${tmp}
+variable pxz1 equal 2.01314611218149e-08
+variable tmp equal pyz
+variable pyz1 equal ${tmp}
+variable pyz1 equal -4.62888696531379e-09
+
+# Compute elastic constant from pressure tensor
+
+variable C1neg equal ${d1}
+variable C1neg equal -0.00206945236241203
+variable C2neg equal ${d2}
+variable C2neg equal -0.00130488710666853
+variable C3neg equal ${d3}
+variable C3neg equal -0.000252334404214751
+variable C4neg equal ${d4}
+variable C4neg equal -1.37538502142294e-06
+variable C5neg equal ${d5}
+variable C5neg equal -1.13848434266704e-06
+variable C6neg equal ${d6}
+variable C6neg equal 58.9827203937137
+
+# Reset box and simulation parameters
+
+clear
+box tilt large
+read_restart restart.equil
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (0 0 0)
+  1 by 1 by 1 MPI processor grid
+  48 atoms
+include potential.mod
+# NOTE: This script can be modified for different pair styles
+# See in.elastic for more info.
+
+# Choose potential
+pair_style     rebo
+pair_coeff     * * CH.airebo C
+Reading potential file CH.airebo with DATE: 2011-10-25
+
+#pair_style     lcbop
+#pair_coeff     C.lcbop
+#pair_style     tersoff
+#pair_coeff     BNC.tersoff
+
+
+# Setup neighbor style
+neighbor 1.0 nsq
+neigh_modify once no every 1 delay 0 check yes
+
+# Setup minimization style
+min_style	     cg
+min_modify	     dmax ${dmax} line quadratic
+min_modify	     dmax 0.01 line quadratic
+
+# Setup output
+thermo		500
+thermo_style custom step temp pe press pxx pyy pzz pxy pxz pyz lx ly lz vol
+thermo_modify norm no
+
+
+# Output
+dump            1 all xtc 100 traj.xtc
+dump            2 all xyz 2000 relaxed.xyz
+#dump            4 all atom 10 dump.atom
+
+# Positive deformation
+
+variable delta equal ${up}*${len0}
+variable delta equal 1.0e-5*${len0}
+variable delta equal 1.0e-5*7.80058364599987
+variable deltaxy equal ${up}*xy
+variable deltaxy equal 1.0e-5*xy
+variable deltaxz equal ${up}*xz
+variable deltaxz equal 1.0e-5*xz
+variable deltayz equal ${up}*yz
+variable deltayz equal 1.0e-5*yz
+if "${dir} == 1" then    "change_box all x delta 0 ${delta} xy delta ${deltaxy} xz delta ${deltaxz} remap units box"
+if "${dir} == 2" then    "change_box all y delta 0 ${delta} yz delta ${deltayz} remap units box"
+if "${dir} == 3" then    "change_box all z delta 0 ${delta} remap units box"
+if "${dir} == 4" then    "change_box all yz delta ${delta} remap units box"
+if "${dir} == 5" then    "change_box all xz delta ${delta} remap units box"
+if "${dir} == 6" then    "change_box all xy delta ${delta} remap units box"
+change_box all xy delta ${delta} remap units box
+change_box all xy delta 7.80058364599987e-05 remap units box
+  triclinic box = (-0.000291823 -0.000291823 -0.000291823) to (7.80029 7.80029 7.80029) with tilt (7.80058e-05 0 0)
+
+# Relax atoms positions
+
+minimize ${etol} ${ftol} ${maxiter} ${maxeval}
+minimize 0 ${ftol} ${maxiter} ${maxeval}
+minimize 0 1e-10 ${maxiter} ${maxeval}
+minimize 0 1e-10 10000000 ${maxeval}
+minimize 0 1e-10 10000000 10000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair rebo, perpetual
+      attributes: full, newton on, ghost
+      pair build: full/nsq/ghost
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 4.905 | 4.905 | 4.905 Mbytes
+Step Temp PotEng Press Pxx Pyy Pzz Pxy Pxz Pyz Lx Ly Lz Volume 
+     157            0   -341.70536 -0.010907245   -2.6965787    4.3030948   -1.6392379   -16.427395   0.67874721 -0.024033836    7.8005836    7.8005836    7.8005836    474.65854 
+     209            0   -341.70536 -0.00012078598 -0.0002068127 -0.0001305017 -2.5043551e-05   -5.8982722 -5.4743184e-08 2.0041522e-08    7.8005836    7.8005836    7.8005836    474.65854 
+Loop time of 0.0175571 on 1 procs for 52 steps with 48 atoms
+
+98.8% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+        -341.705356237     -341.705356415     -341.705356415
+  Force two-norm initial, final = 0.00573055 8.84819e-11
+  Force max component initial, final = 0.00119899 1.97958e-11
+  Final line search alpha, max atom move = 1 1.97958e-11
+  Iterations, force evaluations = 52 104
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.016872   | 0.016872   | 0.016872   |   0.0 | 96.10
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00035071 | 0.00035071 | 0.00035071 |   0.0 |  2.00
+Output  | 2.6941e-05 | 2.6941e-05 | 2.6941e-05 |   0.0 |  0.15
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0003078  |            |       |  1.75
+
+Nlocal:    48 ave 48 max 48 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    1032 ave 1032 max 1032 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:  7152 ave 7152 max 7152 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 7152
+Ave neighs/atom = 149
+Neighbor list builds = 0
+Dangerous builds = 0
+
+# Obtain new stress tensor
+
+variable tmp equal pe
+variable e1 equal ${tmp}
+variable e1 equal -341.705356414613
+variable tmp equal press
+variable p1 equal ${tmp}
+variable p1 equal -0.0001207859819787
+variable tmp equal pxx
+variable pxx1 equal ${tmp}
+variable pxx1 equal -0.000206812698750763
+variable tmp equal pyy
+variable pyy1 equal ${tmp}
+variable pyy1 equal -0.000130501696058873
+variable tmp equal pzz
+variable pzz1 equal ${tmp}
+variable pzz1 equal -2.50435511264647e-05
+variable tmp equal pxy
+variable pxy1 equal ${tmp}
+variable pxy1 equal -5.89827223342374
+variable tmp equal pxz
+variable pxz1 equal ${tmp}
+variable pxz1 equal -5.47431839291644e-08
+variable tmp equal pyz
+variable pyz1 equal ${tmp}
+variable pyz1 equal 2.00415216082401e-08
+
+# Compute elastic constant from pressure tensor
+
+variable C1pos equal ${d1}
+variable C1pos equal 0.00206953545902761
+variable C2pos equal ${d2}
+variable C2pos equal 0.00130519744296012
+variable C3pos equal ${d3}
+variable C3pos equal 0.000252025608137331
+variable C4pos equal ${d4}
+variable C4pos equal 1.1286809356874e-06
+variable C5pos equal ${d5}
+variable C5pos equal 1.88723079317683e-06
+variable C6pos equal ${d6}
+variable C6pos equal 58.9827236595336
+
+# Combine positive and negative
+
+variable C1${dir} equal 0.5*(${C1neg}+${C1pos})
+variable C16 equal 0.5*(${C1neg}+${C1pos})
+variable C16 equal 0.5*(-0.00206945236241203+${C1pos})
+variable C16 equal 0.5*(-0.00206945236241203+0.00206953545902761)
+variable C2${dir} equal 0.5*(${C2neg}+${C2pos})
+variable C26 equal 0.5*(${C2neg}+${C2pos})
+variable C26 equal 0.5*(-0.00130488710666853+${C2pos})
+variable C26 equal 0.5*(-0.00130488710666853+0.00130519744296012)
+variable C3${dir} equal 0.5*(${C3neg}+${C3pos})
+variable C36 equal 0.5*(${C3neg}+${C3pos})
+variable C36 equal 0.5*(-0.000252334404214751+${C3pos})
+variable C36 equal 0.5*(-0.000252334404214751+0.000252025608137331)
+variable C4${dir} equal 0.5*(${C4neg}+${C4pos})
+variable C46 equal 0.5*(${C4neg}+${C4pos})
+variable C46 equal 0.5*(-1.37538502142294e-06+${C4pos})
+variable C46 equal 0.5*(-1.37538502142294e-06+1.1286809356874e-06)
+variable C5${dir} equal 0.5*(${C5neg}+${C5pos})
+variable C56 equal 0.5*(${C5neg}+${C5pos})
+variable C56 equal 0.5*(-1.13848434266704e-06+${C5pos})
+variable C56 equal 0.5*(-1.13848434266704e-06+1.88723079317683e-06)
+variable C6${dir} equal 0.5*(${C6neg}+${C6pos})
+variable C66 equal 0.5*(${C6neg}+${C6pos})
+variable C66 equal 0.5*(58.9827203937137+${C6pos})
+variable C66 equal 0.5*(58.9827203937137+58.9827236595336)
+
+# Delete dir to make sure it is not reused
+
+variable dir delete
+
+# Output final values
+
+variable C11all equal ${C11}
+variable C11all equal 268.876573869696
+variable C22all equal ${C22}
+variable C22all equal 268.876573873025
+variable C33all equal ${C33}
+variable C33all equal 268.876574946235
+
+variable C12all equal 0.5*(${C12}+${C21})
+variable C12all equal 0.5*(185.671689087528+${C21})
+variable C12all equal 0.5*(185.671689087528+185.671688918719)
+variable C13all equal 0.5*(${C13}+${C31})
+variable C13all equal 0.5*(185.671689004686+${C31})
+variable C13all equal 0.5*(185.671689004686+185.671689581335)
+variable C23all equal 0.5*(${C23}+${C32})
+variable C23all equal 0.5*(185.671688618567+${C32})
+variable C23all equal 0.5*(185.671688618567+185.671689343259)
+
+variable C44all equal ${C44}
+variable C44all equal 58.9827216762736
+variable C55all equal ${C55}
+variable C55all equal 58.982722347822
+variable C66all equal ${C66}
+variable C66all equal 58.9827220266236
+
+variable C14all equal 0.5*(${C14}+${C41})
+variable C14all equal 0.5*(4.01373816729929e-08+${C41})
+variable C14all equal 0.5*(4.01373816729929e-08+5.30837596311065e-07)
+variable C15all equal 0.5*(${C15}+${C51})
+variable C15all equal 0.5*(-1.31161790499837e-09+${C51})
+variable C15all equal 0.5*(-1.31161790499837e-09+-1.4486652039322e-07)
+variable C16all equal 0.5*(${C16}+${C61})
+variable C16all equal 0.5*(4.15483077901169e-08+${C61})
+variable C16all equal 0.5*(4.15483077901169e-08+1.27118004457665e-06)
+
+variable C24all equal 0.5*(${C24}+${C42})
+variable C24all equal 0.5*(-1.25165823051162e-08+${C42})
+variable C24all equal 0.5*(-1.25165823051162e-08+-2.87239862906595e-07)
+variable C25all equal 0.5*(${C25}+${C52})
+variable C25all equal 0.5*(-2.29857290599513e-07+${C52})
+variable C25all equal 0.5*(-2.29857290599513e-07+7.2593081812855e-08)
+variable C26all equal 0.5*(${C26}+${C62})
+variable C26all equal 0.5*(1.55168145795086e-07+${C62})
+variable C26all equal 0.5*(1.55168145795086e-07+-1.0959750699188e-06)
+
+variable C34all equal 0.5*(${C34}+${C43})
+variable C34all equal 0.5*(-4.67741682750244e-08+${C43})
+variable C34all equal 0.5*(-4.67741682750244e-08+-1.82671576513055e-07)
+variable C35all equal 0.5*(${C35}+${C53})
+variable C35all equal 0.5*(1.84256083475033e-07+${C53})
+variable C35all equal 0.5*(1.84256083475033e-07+-1.3913914068935e-08)
+variable C36all equal 0.5*(${C36}+${C63})
+variable C36all equal 0.5*(-1.54398038710023e-07+${C63})
+variable C36all equal 0.5*(-1.54398038710023e-07+-1.09390305187417e-06)
+
+variable C45all equal 0.5*(${C45}+${C54})
+variable C45all equal 0.5*(4.44900793816451e-08+${C54})
+variable C45all equal 0.5*(4.44900793816451e-08+-1.504987860484e-08)
+variable C46all equal 0.5*(${C46}+${C64})
+variable C46all equal 0.5*(-1.2335204286777e-07+${C64})
+variable C46all equal 0.5*(-1.2335204286777e-07+1.24043452878375e-07)
+variable C56all equal 0.5*(${C56}+${C65})
+variable C56all equal 0.5*(3.74373225254895e-07+${C65})
+variable C56all equal 0.5*(3.74373225254895e-07+-8.88489969726601e-08)
+
+# Average moduli for cubic crystals
+
+variable C11cubic equal (${C11all}+${C22all}+${C33all})/3.0
+variable C11cubic equal (268.876573869696+${C22all}+${C33all})/3.0
+variable C11cubic equal (268.876573869696+268.876573873025+${C33all})/3.0
+variable C11cubic equal (268.876573869696+268.876573873025+268.876574946235)/3.0
+variable C12cubic equal (${C12all}+${C13all}+${C23all})/3.0
+variable C12cubic equal (185.671689003124+${C13all}+${C23all})/3.0
+variable C12cubic equal (185.671689003124+185.671689293011+${C23all})/3.0
+variable C12cubic equal (185.671689003124+185.671689293011+185.671688980913)/3.0
+variable C44cubic equal (${C44all}+${C55all}+${C66all})/3.0
+variable C44cubic equal (58.9827216762736+${C55all}+${C66all})/3.0
+variable C44cubic equal (58.9827216762736+58.982722347822+${C66all})/3.0
+variable C44cubic equal (58.9827216762736+58.982722347822+58.9827220266236)/3.0
+
+variable bulkmodulus equal (${C11cubic}+2*${C12cubic})/3.0
+variable bulkmodulus equal (268.876574229652+2*${C12cubic})/3.0
+variable bulkmodulus equal (268.876574229652+2*185.671689092349)/3.0
+variable shearmodulus1 equal ${C44cubic}
+variable shearmodulus1 equal 58.9827220169064
+variable shearmodulus2 equal (${C11cubic}-${C12cubic})/2.0
+variable shearmodulus2 equal (268.876574229652-${C12cubic})/2.0
+variable shearmodulus2 equal (268.876574229652-185.671689092349)/2.0
+variable poissonratio equal 1.0/(1.0+${C11cubic}/${C12cubic})
+variable poissonratio equal 1.0/(1.0+268.876574229652/${C12cubic})
+variable poissonratio equal 1.0/(1.0+268.876574229652/185.671689092349)
+
+# For Stillinger-Weber silicon, the analytical results
+# are known to be (E. R. Cowley, 1988):
+#               C11 = 151.4 GPa
+#               C12 = 76.4 GPa
+#               C44 = 56.4 GPa
+
+print "========================================="
+=========================================
+print "Components of the Elastic Constant Tensor"
+Components of the Elastic Constant Tensor
+print "========================================="
+=========================================
+
+print "Elastic Constant C11all = ${C11all} ${cunits}"
+Elastic Constant C11all = 268.876573869696 GPa
+print "Elastic Constant C22all = ${C22all} ${cunits}"
+Elastic Constant C22all = 268.876573873025 GPa
+print "Elastic Constant C33all = ${C33all} ${cunits}"
+Elastic Constant C33all = 268.876574946235 GPa
+
+print "Elastic Constant C12all = ${C12all} ${cunits}"
+Elastic Constant C12all = 185.671689003124 GPa
+print "Elastic Constant C13all = ${C13all} ${cunits}"
+Elastic Constant C13all = 185.671689293011 GPa
+print "Elastic Constant C23all = ${C23all} ${cunits}"
+Elastic Constant C23all = 185.671688980913 GPa
+
+print "Elastic Constant C44all = ${C44all} ${cunits}"
+Elastic Constant C44all = 58.9827216762736 GPa
+print "Elastic Constant C55all = ${C55all} ${cunits}"
+Elastic Constant C55all = 58.982722347822 GPa
+print "Elastic Constant C66all = ${C66all} ${cunits}"
+Elastic Constant C66all = 58.9827220266236 GPa
+
+print "Elastic Constant C14all = ${C14all} ${cunits}"
+Elastic Constant C14all = 2.85487488992029e-07 GPa
+print "Elastic Constant C15all = ${C15all} ${cunits}"
+Elastic Constant C15all = -7.30890691491092e-08 GPa
+print "Elastic Constant C16all = ${C16all} ${cunits}"
+Elastic Constant C16all = 6.56364176183383e-07 GPa
+
+print "Elastic Constant C24all = ${C24all} ${cunits}"
+Elastic Constant C24all = -1.49878222605856e-07 GPa
+print "Elastic Constant C25all = ${C25all} ${cunits}"
+Elastic Constant C25all = -7.8632104393329e-08 GPa
+print "Elastic Constant C26all = ${C26all} ${cunits}"
+Elastic Constant C26all = -4.70403462061857e-07 GPa
+
+print "Elastic Constant C34all = ${C34all} ${cunits}"
+Elastic Constant C34all = -1.1472287239404e-07 GPa
+print "Elastic Constant C35all = ${C35all} ${cunits}"
+Elastic Constant C35all = 8.5171084703049e-08 GPa
+print "Elastic Constant C36all = ${C36all} ${cunits}"
+Elastic Constant C36all = -6.24150545292097e-07 GPa
+
+print "Elastic Constant C45all = ${C45all} ${cunits}"
+Elastic Constant C45all = 1.47201003884025e-08 GPa
+print "Elastic Constant C46all = ${C46all} ${cunits}"
+Elastic Constant C46all = 3.45705005302503e-10 GPa
+print "Elastic Constant C56all = ${C56all} ${cunits}"
+Elastic Constant C56all = 1.42762114141117e-07 GPa
+
+print "========================================="
+=========================================
+print "Average properties for a cubic crystal"
+Average properties for a cubic crystal
+print "========================================="
+=========================================
+
+print "Bulk Modulus = ${bulkmodulus} ${cunits}"
+Bulk Modulus = 213.406650804783 GPa
+print "Shear Modulus 1 = ${shearmodulus1} ${cunits}"
+Shear Modulus 1 = 58.9827220169064 GPa
+print "Shear Modulus 2 = ${shearmodulus2} ${cunits}"
+Shear Modulus 2 = 41.6024425686515 GPa
+print "Poisson Ratio = ${poissonratio}"
+Poisson Ratio = 0.408475191908982
+print "Deformation size: ${up}"
+Deformation size: 1.0e-5
+
+print "Lattice_type	lattice_constant	bulk_modulus	poisson	     c11	     c12         c44	" file elastic_constants.out
+Lattice_type	lattice_constant	bulk_modulus	poisson	     c11	     c12         c44	
+print "${lattype}    ${latconst}    ${bulkmodulus}     ${poissonratio}     ${C11all}     ${C12all}     ${C44all}" append elastic_constants.out
+sc    7.8    213.406650804783     0.408475191908982     268.876573869696     185.671689003124     58.9827216762736
+Total wall time: 0:00:00

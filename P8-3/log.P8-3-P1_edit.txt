@@ -1,0 +1,18 @@
+read_data       ${fname}
+read_data       P8-3-P1_edit.txt
+  orthogonal box = (-14.51 -14.51 -14.51) to (14.51 14.51 14.51)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  768 atoms
+change_box 	all triclinic
+  triclinic box = (-14.51 -14.51 -14.51) to (14.51 14.51 14.51) with tilt (0 0 0)
+
+include potential.mod
+# NOTE: This script can be modified for different pair styles
+# See in.elastic for more info.
+
+# Choose potential
+pair_style     rebo
+pair_coeff     * * CH.airebo C
+ERROR: Incorrect args for pair coefficients (../pair_airebo.cpp:185)
+Last command: pair_coeff     * * CH.airebo C
