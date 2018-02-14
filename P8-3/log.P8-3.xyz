@@ -1,0 +1,4 @@
+read_data       ${fname}
+read_data       P8-3.xyz
+ERROR: No bonds allowed with this atom style (../read_data.cpp:1095)
+Last command: read_data       ${fname}

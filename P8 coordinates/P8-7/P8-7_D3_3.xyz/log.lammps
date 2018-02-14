@@ -1,4 +1,5 @@
-LAMMPS (11 Aug 2017)
+LAMMPS (10 Feb 2015)
+  using 1 OpenMP thread(s) per MPI task
 # Compute elastic constant tensor for a crystal
 #
 # Written by Aidan Thompson (Sandia, athomps@sandia.gov)
@@ -91,9 +92,9 @@ boundary	p p p
 
 lattice         ${lattype} ${latconst}
 lattice         sc ${latconst}
-lattice         sc 5.0
-Lattice spacing in x,y,z = 5 5 5
+lattice         sc 10.0
+Lattice spacing in x,y,z = 10 10 10
 
 atom_style      atomic
 log             log.${fname}
-log             log.P8-3.xyz
+log             log.P8-7_D3_3.xyz

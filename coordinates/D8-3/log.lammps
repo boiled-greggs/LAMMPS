@@ -91,9 +91,9 @@ boundary	p p p
 
 lattice         ${lattype} ${latconst}
 lattice         sc ${latconst}
-lattice         sc 5.0
-Lattice spacing in x,y,z = 5 5 5
+lattice         sc 10.0
+Lattice spacing in x,y,z = 10 10 10
 
 atom_style      atomic
 log             log.${fname}
-log             log.P8-3.xyz
+log             log.lammps.xyz

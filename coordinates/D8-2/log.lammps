@@ -96,4 +96,4 @@ Lattice spacing in x,y,z = 5 5 5
 
 atom_style      atomic
 log             log.${fname}
-log             log.P8-3.xyz
+log             log.lammpsD8-2.xyz

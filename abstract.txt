@@ -1,0 +1,15 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1561
+{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;}
+{\colortbl;\red255\green255\blue255;\red53\green53\blue53;}
+{\*\expandedcolortbl;;\cssrgb\c27059\c27059\c27059;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab560
+\pard\pardeftab560\slleading20\partightenfactor0
+
+\f0\fs24 \cf2 Schwarzites, a family of analogs of porous graphene that exhibit negative Gaussian curvature, possess a variety of interesting mechanical and electrical properties. These structures have a variety of potential applications in future technology, and their mechanical properties may be of use. They could be used to synthesize auxetic materials, which possess qualities like high energy absorption and resistance to fracture.\
+\
+Of particular interest here is the Poisson\'92s ratio, a ratio of transverse to axial strain. Using LAMMPS to calculate the Poisson\'92s ratio of the P, or primitive, family of schwarzites, it was shown that it is possible to tune the Poisson\'92s ratio by introducing defects to the structure \'96 namely the Stone-Wales defect. In fact, in some large and stable P schwarzites with a certain number of Stone-Wales defects, a negative Poisson\'92s ratio was calculated; for instance, the P8-15 schwarzite with 5 Stone-Wales defects has a Poisson\'92s ratio of -0.011. P8-31 has a rati of about -0.1 when 10 of the defects are introduced. The ratio varies greatly for different numbers of defects, but appears to be following a trend. These results make clear the potential for synthesizing  auxetics from schwarzites, as described previously. These materials could have a wide variety of application in the near future.\
+\pard\pardeftab560\slleading20\pardirnatural\partightenfactor0
+\cf2 \
+\pard\pardeftab560\slleading20\partightenfactor0
+\cf2 We will be continuing to study this P family of schwarzites, calculating the poisson\'92s ratio of larger structures. Additionally, other families of schwarzites will be explored, namely the D and G families, which have not yet been studied in this way. Calculating the Poisson\'92s ratio of schwarzites in these other families may reveal similar trends to the P schwarzites, where introducing defects allowed the Poisson\'92s ratio to be tuned, dependent on the number of defects.}
