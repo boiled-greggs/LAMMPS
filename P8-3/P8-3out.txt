@@ -1,0 +1,5 @@
+LAMMPS (11 Aug 2017)
+Lattice spacing in x,y,z = 5 5 5
+Reading data file ...
+ERROR: No bonds allowed with this atom style (../read_data.cpp:1095)
+Last command: read_data       ${fname}
